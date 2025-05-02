@@ -1,0 +1,23 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f0f2f5;
+  background-image: url("https://gw.alipayobjects.com/zos/rmsportal/TVYTbAXWheQpRcWDaDMu.svg");
+  background-repeat: no-repeat;
+  background-position: center 110px;
+  background-size: 100%;
+}
+
+.login-card {
+  width: 380px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.login-card .ant-card-head {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+}
