@@ -21,7 +21,7 @@ export class AuthAdminService {
 
     return {
       adminId: admin.adminId,
-      acess_token: await this.jwtService.signAsync(payload, {
+      access_token: await this.jwtService.signAsync(payload, {
         expiresIn: '7d',
       }),
     };

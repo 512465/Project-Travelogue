@@ -1,34 +1,33 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { AuthUserService } from './auth-user.service';
 import { CreateAuthUserDto } from './dto/create-auth-user.dto';
-import { UpdateAuthUserDto } from './dto/update-auth-user.dto';
+import { AuthUserGuard } from './authUser.guard';
 
 @Controller('auth-user')
 export class AuthUserController {
   constructor(private readonly authUserService: AuthUserService) {}
 
-  @Post()
-  create(@Body() createAuthUserDto: CreateAuthUserDto) {
-    return this.authUserService.create(createAuthUserDto);
+  @HttpCode(HttpStatus.OK)
+  @Post('login')
+  singIn(@Body() createAuthUserDto: CreateAuthUserDto) {
+    return this.authUserService.singIn(
+      createAuthUserDto.userName,
+      createAuthUserDto.userPassword,
+    );
   }
 
-  @Get()
-  findAll() {
-    return this.authUserService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authUserService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthUserDto: UpdateAuthUserDto) {
-    return this.authUserService.update(+id, updateAuthUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authUserService.remove(+id);
+  @UseGuards(AuthUserGuard)
+  @Get('profile')
+  getProfile(@Request() req) {
+    return req.user;
   }
 }
