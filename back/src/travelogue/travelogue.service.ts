@@ -1,26 +1,133 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { CreateTravelogueDto } from './dto/create-travelogue.dto';
 import { UpdateTravelogueDto } from './dto/update-travelogue.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { TravelogueEntity } from './entities/travelogue.entity';
+import { UserEntity } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class TravelogueService {
-  create(createTravelogueDto: CreateTravelogueDto) {
-    return 'This action adds a new travelogue';
+  constructor(
+    @InjectRepository(TravelogueEntity)
+    private readonly travelogueRepository: Repository<TravelogueEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
+  ) {}
+  async create(createTravelogueDto: CreateTravelogueDto, userId: number) {
+    const travelogue = this.travelogueRepository.create({
+      ...createTravelogueDto,
+      userId, // 关联用户ID
+    });
+    const saveTravelogue = await this.travelogueRepository.save(travelogue);
+    return saveTravelogue;
   }
 
-  findAll() {
-    return `This action returns all travelogue`;
+  async findAll(
+    id: number,
+    query: {
+      page?: number;
+      limit?: number;
+      travelogueStatus?: number;
+    },
+  ) {
+    const user = await this.userRepository.findOne({ where: { userId: id } });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+
+    const { page = 1, limit = 10, travelogueStatus } = query;
+    const skip = (page - 1) * limit;
+    const queryBuilder =
+      this.travelogueRepository.createQueryBuilder('travelogue');
+
+    queryBuilder.where('travelogue.userId = :userId', { userId: id });
+
+    // 根据状态查询
+    if (travelogueStatus) {
+      queryBuilder.andWhere('travelogue.travelogueStatus = :travelogueStatus', {
+        travelogueStatus,
+      });
+    }
+
+    // 执行查询并获取结果
+    const [items, total] = await queryBuilder
+      .orderBy('travelogue.createTime', 'DESC')
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
+
+    return { items, total };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} travelogue`;
+  async findOne(id: number) {
+    const travelogue = await this.travelogueRepository.findOne({
+      where: { travelogueId: id },
+    });
+    if (!travelogue) {
+      throw new NotFoundException('游记不存在');
+    }
+    return travelogue;
   }
 
-  update(id: number, updateTravelogueDto: UpdateTravelogueDto) {
-    return `This action updates a #${id} travelogue`;
+  async update(
+    id: number,
+    updateTravelogueDto: UpdateTravelogueDto,
+    userId: number,
+  ) {
+    const travelogue = await this.travelogueRepository.findOne({
+      where: { travelogueId: id },
+    });
+    if (!travelogue) {
+      throw new NotFoundException('游记不存在');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { userId: userId },
+    });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+
+    // 检查用户是否有权限更新
+    if (travelogue.userId !== userId) {
+      throw new ForbiddenException('你没有权限更新此游记');
+    }
+
+    // 更新游记信息
+    const updatedTravelogue = await this.travelogueRepository.save({
+      ...travelogue,
+      ...updateTravelogueDto,
+    });
+
+    return updatedTravelogue;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} travelogue`;
+  async remove(id: number, userId: number) {
+    const travelogue = await this.travelogueRepository.findOne({
+      where: { travelogueId: id },
+    });
+    if (!travelogue) {
+      throw new NotFoundException('游记不存在');
+    }
+    const user = await this.userRepository.findOne({
+      where: { userId: userId },
+    });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+    // 检查用户是否有权限删除
+    if (travelogue.userId !== userId) {
+      throw new ForbiddenException('你没有权限删除此游记');
+    }
+    const result = await this.travelogueRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException('删除失败');
+    }
+    return result;
   }
 }

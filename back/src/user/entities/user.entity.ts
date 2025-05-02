@@ -3,7 +3,9 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
+import { TravelogueEntity } from 'src/travelogue/entities/travelogue.entity';
 
 @Entity('user')
 export class UserEntity {
@@ -33,4 +35,8 @@ export class UserEntity {
 
   @Column({ default: 'uploads/1.png' })
   userAvatar: string; // 用户头像，非空
+
+  // 用户与游记的关系，一个用户可以有多个游记
+  @OneToMany(() => TravelogueEntity, (travelogue) => travelogue.user)
+  travelogues: TravelogueEntity[];
 }
