@@ -8,6 +8,7 @@ import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthAdminModule } from './auth-admin/auth-admin.module';
 import { AuthUserModule } from './auth-user/auth-user.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AuthUserModule } from './auth-user/auth-user.module';
     UserModule,
     AuthAdminModule,
     AuthUserModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

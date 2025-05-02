@@ -3,9 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
   HttpCode,
   HttpStatus,
   UseGuards,
@@ -17,7 +14,7 @@ import { CreateAuthAdminDto } from './dto/create.auth.admin.dto';
 
 @Controller('auth-admin')
 export class AuthAdminController {
-  constructor(private readonly authAdminService: AuthAdminService) {}
+  constructor(private readonly authAdminService: AuthAdminService) { }
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
@@ -27,6 +24,7 @@ export class AuthAdminController {
       AdminDto.adminPassword,
     );
   }
+
   @UseGuards(AuthAdminGuard)
   @Get('profile')
   getProfile(@Request() req) {
