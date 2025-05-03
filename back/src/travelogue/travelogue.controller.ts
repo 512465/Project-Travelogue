@@ -49,15 +49,13 @@ export class TravelogueController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
     @Query('travelogueStatus') travelogueStatus?: number,
-    @Query('travelogueTitle') travelogueTitle?: string,
-    @Query('travelogueAuthor') travelogueAuthor?: string,
+    @Query('keyword') keyword?: string,
   ) {
     return this.travelogueService.findAllList({
       page,
       limit,
       travelogueStatus,
-      travelogueTitle,
-      travelogueAuthor,
+      keyword,
     });
   }
 
