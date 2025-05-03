@@ -18,9 +18,14 @@ export class TravelogueService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
   ) {}
-  async create(createTravelogueDto: CreateTravelogueDto, userId: number) {
+  async create(
+    createTravelogueDto: CreateTravelogueDto,
+    userId: number,
+    userName: string,
+  ) {
     const travelogue = this.travelogueRepository.create({
       ...createTravelogueDto,
+      travelogueAuthor: userName,
       userId, // 关联用户ID
     });
     const saveTravelogue = await this.travelogueRepository.save(travelogue);
@@ -61,7 +66,58 @@ export class TravelogueService {
       .take(limit)
       .getManyAndCount();
 
-    return { items, total };
+    return { items, total, page, limit };
+  }
+
+  async findAllList(query: {
+    page?: number;
+    limit?: number;
+    travelogueStatus?: number;
+    travelogueTitle?: string;
+    travelogueAuthor?: string;
+  }) {
+    const {
+      page = 1,
+      limit = 10,
+      travelogueStatus,
+      travelogueTitle,
+      travelogueAuthor,
+    } = query;
+    const skip = (page - 1) * limit;
+    const queryBuilder =
+      this.travelogueRepository.createQueryBuilder('travelogue');
+
+    // 根据状态查询
+    if (travelogueStatus) {
+      queryBuilder.andWhere('travelogue.travelogueStatus = :travelogueStatus', {
+        travelogueStatus,
+      });
+    }
+
+    // 根据标题查询
+    if (travelogueTitle) {
+      queryBuilder.andWhere(
+        'travelogue.travelogueTitle LIKE :travelogueTitle',
+        { travelogueTitle: `%${travelogueTitle}%` },
+      );
+    }
+
+    // 根据作者查询
+    if (travelogueAuthor) {
+      queryBuilder.andWhere(
+        'travelogue.travelogueAuthor LIKE :travelogueAuthor',
+        { travelogueAuthor: `%${travelogueAuthor}%` },
+      );
+    }
+
+    // 执行查询并获取结果
+    const [items, total] = await queryBuilder
+      .orderBy('travelogue.createTime', 'DESC')
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
+
+    return { items, total, page, limit };
   }
 
   async findOne(id: number) {
