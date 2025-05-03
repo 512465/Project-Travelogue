@@ -6,6 +6,6 @@ export const getTravelogs = () => {
 }
 
 // 搜索游记
-export const searchTravelogs = ({  travelogueTitle, travelogueAuthor }) => {
-  return get(`/api/travelogue/list?travelogueTitle=${travelogueTitle}&travelogueAuthor=${travelogueAuthor}`)
+export const searchTravelogs = (keyword) => {
+  return get(`/api/travelogue/list?keyword=${keyword}`)
 }

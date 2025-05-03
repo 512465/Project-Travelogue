@@ -78,16 +78,9 @@ export class TravelogueService {
     page?: number;
     limit?: number;
     travelogueStatus?: number;
-    travelogueTitle?: string;
-    travelogueAuthor?: string;
+    keyword?: string;
   }) {
-    const {
-      page = 1,
-      limit = 10,
-      travelogueStatus,
-      travelogueTitle,
-      travelogueAuthor,
-    } = query;
+    const { page = 1, limit = 10, travelogueStatus, keyword } = query;
     const skip = (page - 1) * limit;
     const queryBuilder =
       this.travelogueRepository.createQueryBuilder('travelogue');
@@ -99,19 +92,11 @@ export class TravelogueService {
       });
     }
 
-    // 根据标题查询
-    if (travelogueTitle) {
+    // 根据关键字查询标题或作者
+    if (keyword) {
       queryBuilder.andWhere(
-        'travelogue.travelogueTitle LIKE :travelogueTitle',
-        { travelogueTitle: `%${travelogueTitle}%` },
-      );
-    }
-
-    // 根据作者查询
-    if (travelogueAuthor) {
-      queryBuilder.andWhere(
-        'travelogue.travelogueAuthor LIKE :travelogueAuthor',
-        { travelogueAuthor: `%${travelogueAuthor}%` },
+        '(travelogue.travelogueTitle LIKE :keyword OR travelogue.travelogueAuthor LIKE :keyword)',
+        { keyword: `%${keyword}%` },
       );
     }
 
