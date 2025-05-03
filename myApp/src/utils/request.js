@@ -1,0 +1,55 @@
+// src/utils/request.js
+import Taro from '@tarojs/taro'
+
+const BASE_URL = 'http://127.0.0.1:3000' // 根据环境变量动态配置更佳
+
+const request = async (method, url, data = {}, config = {}) => {
+  // 合并配置
+  const mergedConfig = {
+    header: {
+      'Content-Type': 'application/json',
+      ...config.header,
+    },
+    ...config,
+  }
+
+  // 请求拦截器（例如：添加 Token）
+  const token = Taro.getStorageSync('token')
+  if (token) {
+    mergedConfig.header.Authorization = `Bearer ${token}`
+  }
+
+  // 显示加载提示
+  Taro.showLoading({ title: '加载中...' })
+
+  try {
+    const response = await Taro.request({
+      url: `${BASE_URL}${url}`,
+      method: method.toUpperCase(),
+      data,
+      ...mergedConfig,
+    })
+
+    // 隐藏加载提示
+    Taro.hideLoading()
+
+    // 响应拦截器
+    if (response.statusCode === 200) {
+      if (response.data.code === 200) {
+        return response.data
+      }
+    } else {
+      throw new Error(`请求失败，状态码：${response.statusCode}`)
+    }
+  } catch (error) {
+    Taro.hideLoading()
+    Taro.showToast({ title: error.message || '网络错误', icon: 'none' })
+    throw error
+  }
+}
+
+// 封装常用方法
+export const get = (url, params, config) => request('GET', url, params, config)
+export const post = (url, data, config) => request('POST', url, data, config)
+export const put = (url, data, config) => request('PUT', url, data, config)
+export const del = (url, data, config) => request('DELETE', url, data, config)
