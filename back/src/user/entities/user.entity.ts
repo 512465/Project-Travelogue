@@ -24,14 +24,14 @@ export class UserEntity {
     length: 30,
     name: 'user_name',
   })
-  userName: string; // 管理员名称，非空且唯一
+  userName: string; // 用户名称，非空且唯一
 
   @Column({
     type: 'varchar',
     length: 30,
     name: 'user_password',
   })
-  userPassword: string; // 管理员密码，非空
+  userPassword: string; // 用户密码，非空
 
   @Column({ default: 'uploads/1.png' })
   userAvatar: string; // 用户头像，非空

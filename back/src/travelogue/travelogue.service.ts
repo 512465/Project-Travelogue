@@ -23,9 +23,14 @@ export class TravelogueService {
     userId: number,
     userName: string,
   ) {
+    const user = await this.userRepository.findOne({ where: { userId } });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
     const travelogue = this.travelogueRepository.create({
       ...createTravelogueDto,
       travelogueAuthor: userName,
+      userAvatar: user.userAvatar,
       userId, // 关联用户ID
     });
     const saveTravelogue = await this.travelogueRepository.save(travelogue);

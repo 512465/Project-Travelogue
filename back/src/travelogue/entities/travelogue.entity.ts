@@ -21,6 +21,10 @@ export class TravelogueEntity {
   })
   userId: number;
 
+  // 用户头像
+  @Column({ default: 'uploads/1.png' })
+  userAvatar: string; // 用户头像，非空
+
   // 游记标题
   @Column({
     type: 'varchar',
