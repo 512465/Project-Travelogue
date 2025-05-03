@@ -22,7 +22,11 @@ export class TravelogueController {
   @Post()
   @UseGuards(AuthUserGuard)
   create(@Body() createTravelogueDto: CreateTravelogueDto, @Request() req) {
-    return this.travelogueService.create(createTravelogueDto, req.user.sub);
+    return this.travelogueService.create(
+      createTravelogueDto,
+      req.user.sub,
+      req.user.userName,
+    );
   }
 
   @Get()
@@ -37,6 +41,23 @@ export class TravelogueController {
       page,
       limit,
       travelogueStatus,
+    });
+  }
+
+  @Get('list')
+  findAllList(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('travelogueStatus') travelogueStatus?: number,
+    @Query('travelogueTitle') travelogueTitle?: string,
+    @Query('travelogueAuthor') travelogueAuthor?: string,
+  ) {
+    return this.travelogueService.findAllList({
+      page,
+      limit,
+      travelogueStatus,
+      travelogueTitle,
+      travelogueAuthor,
     });
   }
 

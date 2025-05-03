@@ -70,6 +70,15 @@ export class TravelogueEntity {
   })
   travelogueCover: string;
 
+  // 游记作者
+  @Column({
+    type: 'varchar',
+    nullable: true,
+    name: 'travelogue_author',
+    default: '',
+  })
+  travelogueAuthor: string;
+
   // 关联用户实体，一个用户可以有多篇游记
   @ManyToOne(() => UserEntity, (user) => user.travelogues, { nullable: false })
   @JoinColumn({ name: 'travelogue_user_id' }) // 外键列名
