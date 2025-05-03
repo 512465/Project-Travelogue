@@ -1,10 +1,4 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsOptional,
-  Length,
-  MaxLength,
-} from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, Length } from 'class-validator';
 
 export class CreateTravelogueDto {
   @IsString({ message: 'travelogueTitle必须是字符串' })
@@ -12,7 +6,6 @@ export class CreateTravelogueDto {
   @Length(1, 100, { message: 'travelogueTitle长度必须在1到100个字符之间' })
   travelogueTitle: string;
 
-  @IsString({ message: 'travelogueContent必须是字符串' })
   @IsNotEmpty({ message: 'travelogueContent不能为空' })
   travelogueContent: string;
 

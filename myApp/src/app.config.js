@@ -3,8 +3,6 @@ export default {
     'pages/index/index',
     "pages/my-itineraries/index", // 我的游记
     "pages/publish-itinerary/index", // 游记发布
-    "pages/itinerary-details/index", // 游记详情
-    "pages/user-authentication/index" // 用户登录/注册
   ],
   window: {
     backgroundTextStyle: 'light',
@@ -19,22 +17,20 @@ export default {
     list: [
       {
         pagePath: 'pages/index/index',
+        iconPath: 'assets/home.png',
+        selectedIconPath: 'assets/home_active.png',
         text: '首页',
       },
       {
-        pagePath: 'pages/itinerary-details/index',
-        text: '游记详情',
-      },
-      {
-        pagePath: 'pages/user-authentication/index',
-        text: '用户登录/注册',
-      },
-      {
         pagePath: 'pages/publish-itinerary/index',
+        iconPath: 'assets/add.png',
+        selectedIconPath: 'assets/add_active.png',
         text: '发布游记',
       },
       {
         pagePath:'pages/my-itineraries/index',
+        iconPath:'assets/my.png',
+        selectedIconPath:'assets/my_active.png',
         text:'我的',
      },
     ]
