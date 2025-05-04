@@ -14,9 +14,9 @@ import { UploadModule } from './upload/upload.module';
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql', // 数据库类型
-      host: 'localhost', // 数据库地址
+      host: '114.215.186.193', // 数据库地址
       port: 3306, // 数据库端口
-      username: 'root', // 数据库用户名
+      username: 'rootTrave', // 数据库用户名
       password: '123456', // 数据库密码
       database: 'project', // 数据库名称
       synchronize: true, // 是否自动创建数据库表
