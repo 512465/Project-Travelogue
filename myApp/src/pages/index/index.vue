@@ -1,42 +1,18 @@
 <template>
   <view class="container">
-    <view class="search-container">
-      <view class="search-bar">
-        <input 
-          class="search-input"
-          type="text" 
-          placeholder="搜索游记标题或作者昵称" 
-          v-model="searchQuery"
-          placeholder-class="placeholder-style"
-        />
-        <AtButton 
-          class="search-btn"
-          type='primary' 
-          size='small' 
-          @click="debouncedSearch"
-        >搜索</AtButton>
+    <view>
+      <view>
+        <AtSearchBar @clear="onClear" v-model:value="searchQuery" placeholder="搜索游记标题或作者昵称"
+          @action-click="debouncedSearch" />
       </view>
     </view>
     <view class="waterfall-container">
-      <view 
-        v-for="(item, index) in travelCards" 
-        :key="index" 
-        class="waterfall-item"
-        @click="gotoDetail(item.id)"
-      >
-        <image 
-          :src="item.travelogueCover" 
-          class="item-image" 
-          mode="aspectFill" 
-        />
+      <view v-for="(item, index) in travelCards" :key="index" class="waterfall-item" @click="gotoDetail(item.id)">
+        <image :src="item.travelogueCover" class="item-image" mode="aspectFill" />
         <view class="item-content">
           <text class="item-title">{{ item.travelogueTitle }}</text>
           <view class="user-info">
-            <AtAvatar 
-              circle 
-              size="small"
-              :image="item.authorAvatar || defaultAvatar"
-            />
+            <AtAvatar circle size="small" :image="item.authorAvatar || defaultAvatar" />
             <text class="user-name">{{ item.travelogueAuthor }}</text>
           </view>
         </view>
@@ -48,10 +24,10 @@
 
 <script setup>
 import './index.scss';
-import { ref, computed } from 'vue';
-import { AtAvatar,AtButton } from 'taro-ui-vue3';
+import { ref } from 'vue';
+import { AtAvatar, AtSearchBar } from 'taro-ui-vue3';
 import Taro from '@tarojs/taro';
-import { getTravelogs,searchTravelogs } from '../../api/travelogue.js'
+import { getTravelogs, searchTravelogs } from '../../api/travelogue.js'
 
 const travelCards = ref([]); // 存储游记卡片数据
 const searchQuery = ref(''); // 搜索查询
@@ -71,7 +47,7 @@ const loadTravelCards = async () => {
 // 防抖函数
 const debounce = (func, delay) => {
   let timer;
-  return function(...args) {
+  return function (...args) {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
       func.apply(this, args);
@@ -106,6 +82,11 @@ const debouncedSearch = debounce(performSearch, 300);
 //   });
 // };
 
+const onClear = () => {
+  searchQuery.value = '';
+  loadTravelCards();
+}
+
 
 // 跳转到详情页
 const gotoDetail = (id) => {
@@ -118,4 +99,3 @@ const gotoDetail = (id) => {
 loadTravelCards();
 
 </script>
-
