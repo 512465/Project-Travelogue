@@ -27,7 +27,7 @@
         <input v-model="title" class="input" placeholder="请输入标题" maxlength="20" @input="handleTitleInput" />
         <text class="counter">{{ remainingTitleCount }}/20</text>
       </view>
-      <AtTextarea v-model:value="content" height="200" :maxLength="200" placeholder="请输入内容" />
+      <AtTextarea focus={true} v-model:value="content" height="200" :maxLength="200" placeholder="请输入内容" />
     </view>
 
     <view class="agreement">
