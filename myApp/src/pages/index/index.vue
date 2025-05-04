@@ -7,7 +7,7 @@
       </view>
     </view>
     <view class="waterfall-container">
-      <view v-for="(item, index) in travelCards" :key="index" class="waterfall-item" @click="gotoDetail(item.id)">
+      <view v-for="(item, index) in travelCards" :key="index" class="waterfall-item" @click="gotoDetail(item.travelogueId)">
         <image :src="item.travelogueCover" class="item-image" mode="aspectFill" />
         <view class="item-content">
           <text class="item-title">{{ item.travelogueTitle }}</text>
@@ -90,6 +90,7 @@ const onClear = () => {
 
 // 跳转到详情页
 const gotoDetail = (id) => {
+  console.log(id)
   Taro.navigateTo({
     url: `/pages/travelDetail/index?id=${id}`
   });
