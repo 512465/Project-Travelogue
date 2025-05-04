@@ -3,6 +3,7 @@ export default {
     'pages/index/index',
     "pages/my-itineraries/index", // 我的游记
     "pages/publish-itinerary/index", // 游记发布
+    "pages/travelDetail/index", // 游记详情
   ],
   window: {
     backgroundTextStyle: 'light',
