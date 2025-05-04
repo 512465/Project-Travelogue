@@ -7,7 +7,7 @@
       </view>
     </view>
     <view class="waterfall-container">
-      <view v-for="(item, index) in travelCards" :key="index" class="waterfall-item" @click="gotoDetail(item.travelogueId)">
+      <view v-for="(item, index) in travelCards" :key="index" class="waterfall-item">
         <image :src="item.travelogueCover" class="item-image" mode="aspectFill" />
         <view class="item-content">
           <text class="item-title">{{ item.travelogueTitle }}</text>
@@ -15,6 +15,8 @@
             <AtAvatar circle size="small" :image="item.authorAvatar || defaultAvatar" />
             <text class="user-name">{{ item.travelogueAuthor }}</text>
           </view>
+          <!-- 由于不知名原因，在view 标签中添加 @click 事件，不起作用。 -->
+          <AtButton type='primary' @click="gotoDetail(item.travelogueId)">跳转按钮</AtButton>
         </view>
       </view>
     </view>
@@ -25,7 +27,7 @@
 <script setup>
 import './index.scss';
 import { ref } from 'vue';
-import { AtAvatar, AtSearchBar } from 'taro-ui-vue3';
+import { AtAvatar, AtSearchBar,AtButton } from 'taro-ui-vue3';
 import Taro from '@tarojs/taro';
 import { getTravelogs, searchTravelogs } from '../../api/travelogue.js'
 
@@ -89,10 +91,10 @@ const onClear = () => {
 
 
 // 跳转到详情页
-const gotoDetail = (id) => {
-  console.log(id)
+const gotoDetail = (travelogueId) => {
+  console.log(travelogueId)
   Taro.navigateTo({
-    url: `/pages/travelDetail/index?id=${id}`
+    url: `/pages/travelDetail/index?id=${travelogueId}`
   });
 };
 

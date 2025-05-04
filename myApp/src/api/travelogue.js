@@ -9,3 +9,8 @@ export const getTravelogs = () => {
 export const searchTravelogs = (keyword) => {
   return get(`/api/travelogue/list?keyword=${keyword}`)
 }
+
+// 获取游记详情
+export const getTravelogueDetail = (id) => {
+  return get(`/api/travelogue/${id}`)
+}
