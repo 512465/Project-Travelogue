@@ -3,13 +3,13 @@
     <view>
       <view>
         <AtSearchBar @clear="onClear" v-model:value="searchQuery" placeholder="搜索游记标题或作者昵称"
-                     @action-click="debouncedSearch" />
+          @action-click="debouncedSearch" />
       </view>
     </view>
     <view class="waterfall-container">
       <view v-for="(item, index) in travelCards" :key="index" class="waterfall-item"
-            @tap="gotoDetail(item.travelogueId)">
-        <image :src="item.travelogueCover" class="item-image"   mode="widthFix" />
+        @tap="gotoDetail(item.travelogueId)">
+        <image :src="item.travelogueCover" class="item-image" mode="widthFix" />
         <view class="item-content">
           <text class="item-title">{{ item.travelogueTitle }}</text>
           <view class="user-info">
@@ -27,7 +27,7 @@
 
 <script setup>
 import './index.scss';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { AtSearchBar } from 'taro-ui-vue3';
 import Taro, { usePullDownRefresh, useReachBottom } from '@tarojs/taro';
 import { getTravelogs, searchTravelogs } from '../../api/travelogue.js'
@@ -148,9 +148,7 @@ useReachBottom(() => {
 onMounted(() => {
   const user = Taro.getStorageSync('user')
   console.log(user)
-  const page = 1; // 初始页码
-  const limit = 10; // 每页显示的数量
-  loadTravelCards(page, limit);
+  loadTravelCards();
 });
 
 </script>
