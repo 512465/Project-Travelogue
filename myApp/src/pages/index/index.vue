@@ -7,7 +7,8 @@
       </view>
     </view>
     <view class="waterfall-container">
-      <view v-for="(item, index) in travelCards" :key="index" class="waterfall-item" @tap="gotoDetail(item.travelogueId)">
+      <view v-for="(item, index) in travelCards" :key="index" class="waterfall-item"
+        @tap="gotoDetail(item.travelogueId)">
         <image :src="item.travelogueCover" class="item-image" mode="aspectFill" />
         <view class="item-content">
           <text class="item-title">{{ item.travelogueTitle }}</text>
@@ -24,8 +25,8 @@
 
 <script setup>
 import './index.scss';
-import { ref,onMounted } from 'vue';
-import { AtAvatar, AtSearchBar,AtButton } from 'taro-ui-vue3';
+import { ref, onMounted } from 'vue';
+import { AtAvatar, AtSearchBar, AtButton } from 'taro-ui-vue3';
 import Taro from '@tarojs/taro';
 import { getTravelogs, searchTravelogs } from '../../api/travelogue.js'
 
@@ -35,9 +36,9 @@ const loading = ref(false); // 加载状态
 const defaultAvatar = 'https://img.soogif.com/esrLXK1tXYDebZBHAKgmGx58EZd1smzH.jpeg_s400x0';
 
 // 模拟分页加载函数
-const loadTravelCards = async (page,limit) => {
+const loadTravelCards = async (page, limit) => {
   // 这里应该替换为实际的 API 调用
-  const res = await getTravelogs(page,limit)
+  const res = await getTravelogs(page, limit)
   console.log(res.data.items)
   const data = res.data.items; // 假设从 API 获取的数据
   travelCards.value.push(...data);
@@ -98,9 +99,11 @@ const gotoDetail = (travelogueId) => {
 
 // 页面加载时获取数据
 onMounted(() => {
+  const user = Taro.getStorageSync('user')
+  console.log(user)
   const page = 1; // 初始页码
   const limit = 10; // 每页显示的数量
-  loadTravelCards(page,limit);
+  loadTravelCards(page, limit);
 });
 
 </script>
