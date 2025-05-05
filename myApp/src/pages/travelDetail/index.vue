@@ -15,11 +15,12 @@
 
     <!-- 内容展示 -->
     <template v-else>
-      <image
-        :src="detail.travelogueCover"
-        mode="aspectFill"
-        class="detail-cover"
-      />
+      <swiper class='test-h' indicatorColor='#999' indicatorActiveColor='#333' :current="current" :duration="duration"
+              :interval="interval" circular="true" autoplay="true" indicatorDots="true">
+        <swiper-item v-for="(item, idx) in imgUrls" :key="idx">
+          <image :src="item" class="slide-image" />
+        </swiper-item>
+      </swiper>
 
       <view class="content-wrapper">
         <text class="title">{{ detail.travelogueTitle }}</text>
@@ -64,12 +65,19 @@ const token =
 const loading = ref(true)
 const error = ref('')
 const detail = ref(null)
+const current = ref(0)
+const duration = 500
+const interval = 5000
+const imgUrls = [
+  'http://localhost:3000/uploads/9ec01d910eb95f0476e894622b87875c6cd62df87188b14f752344a8be751810.png',
+  'http://localhost:3000/uploads/6062ff90c5baf81ea3b6768f10c706a16eedded7a1ea095a79fd7a354029fb74.png',
+  'http://localhost:3000/uploads/4996b8ff888472570028606c8b2a3fcb9ecd7d8e82b92664cc3de50f8fab0fc8.png'
+]
 const id = ref(Taro.getCurrentInstance().router?.params?.id || '')
-
 // 方法定义
 const handleBack = () => Taro.navigateBack()
 
-const formatDate = timestamp => 
+const formatDate = timestamp =>
   new Date(timestamp).toLocaleDateString()
 
 const retry = async () => {
@@ -88,11 +96,8 @@ const fetchData = async () => {
         Authorization: `Bearer ${token}`
       }
     })
-
-    // const res = await getTravelogueDetail(id.value)
-    console.log(res, 23265)
-
     detail.value = res.data.data
+    console.log(detail.value)
     Taro.setNavigationBarTitle({ title: res.data.data.travelogueTitle })
   } catch (err) {
     error.value = '数据加载失败'
