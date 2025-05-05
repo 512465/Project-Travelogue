@@ -1,8 +1,8 @@
 import { get } from "../utils/request";
 
 // 获取所有游记
-export const getTravelogs = () => {
-  return get('/api/travelogue/list')
+export const getTravelogs = (page,limit) => {
+  return get(`/api/travelogue/list?page=${page}&limit=${limit}`)
 }
 
 // 搜索游记

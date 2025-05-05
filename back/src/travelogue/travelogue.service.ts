@@ -80,34 +80,67 @@ export class TravelogueService {
     travelogueStatus?: number;
     keyword?: string;
   }) {
-    const { page = 1, limit = 10, travelogueStatus, keyword } = query;
-    const skip = (page - 1) * limit;
-    const queryBuilder =
-      this.travelogueRepository.createQueryBuilder('travelogue');
+    if (query.page && query.limit) {
+      const { page = 1, limit = 10, travelogueStatus, keyword } = query;
+      const skip = (page - 1) * limit;
+      const queryBuilder =
+        this.travelogueRepository.createQueryBuilder('travelogue');
 
-    // 根据状态查询
-    if (travelogueStatus) {
-      queryBuilder.andWhere('travelogue.travelogueStatus = :travelogueStatus', {
-        travelogueStatus,
-      });
+      // 根据状态查询
+      if (travelogueStatus) {
+        queryBuilder.andWhere(
+          'travelogue.travelogueStatus = :travelogueStatus',
+          {
+            travelogueStatus,
+          },
+        );
+      }
+
+      // 根据关键字查询标题或作者
+      if (keyword) {
+        queryBuilder.andWhere(
+          '(travelogue.travelogueTitle LIKE :keyword OR travelogue.travelogueAuthor LIKE :keyword)',
+          { keyword: `%${keyword}%` },
+        );
+      }
+
+      // 执行查询并获取结果
+      const [items, total] = await queryBuilder
+        .orderBy('travelogue.createTime', 'DESC')
+        .skip(skip)
+        .take(limit)
+        .getManyAndCount();
+
+      return { items, total, page, limit };
+    } else {
+      const { travelogueStatus, keyword } = query;
+      const queryBuilder =
+        this.travelogueRepository.createQueryBuilder('travelogue');
+
+      // 根据状态查询
+      if (travelogueStatus) {
+        queryBuilder.andWhere(
+          'travelogue.travelogueStatus = :travelogueStatus',
+          {
+            travelogueStatus,
+          },
+        );
+      }
+
+      // 根据关键字查询标题或作者
+      if (keyword) {
+        queryBuilder.andWhere(
+          '(travelogue.travelogueTitle LIKE :keyword OR travelogue.travelogueAuthor LIKE :keyword)',
+          { keyword: `%${keyword}%` },
+        );
+      }
+
+      const [items, total] = await queryBuilder
+        .orderBy('travelogue.createTime', 'DESC')
+        .getManyAndCount();
+
+      return { items, total };
     }
-
-    // 根据关键字查询标题或作者
-    if (keyword) {
-      queryBuilder.andWhere(
-        '(travelogue.travelogueTitle LIKE :keyword OR travelogue.travelogueAuthor LIKE :keyword)',
-        { keyword: `%${keyword}%` },
-      );
-    }
-
-    // 执行查询并获取结果
-    const [items, total] = await queryBuilder
-      .orderBy('travelogue.createTime', 'DESC')
-      .skip(skip)
-      .take(limit)
-      .getManyAndCount();
-
-    return { items, total, page, limit };
   }
 
   async findOne(id: number) {
