@@ -78,13 +78,11 @@
 }
 
 .waterfall-container {
-  column-count: 2; /* 瀑布流列数 */
   column-gap: 20rpx; /* 列间距 */
   padding: 0 20rpx;
 }
 
 .waterfall-item {
-  break-inside: avoid; /* 防止内容断开 */
   background: #fff;
   border-radius: 16rpx;
   margin-bottom: 20rpx;
@@ -101,6 +99,8 @@
   width: 100%;
   border-radius: 16rpx 16rpx 0 0;
   display: block;
+  min-height: 200px;
+  object-fit: cover;
 }
 
 
@@ -136,4 +136,66 @@
 .avatar{
   width: 50rpx;
   height: 50rpx;
+}
+
+.waterfall-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.waterfall-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.waterfall-item {
+  background: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+  transition: transform 0.3s ease;
+  overflow: hidden;
+}
+
+.item-image {
+  width: 100%;
+  border-radius: 16rpx 16rpx 0 0;
+  display: block;
+  min-height: 200px;
+  object-fit: cover;
+}
+
+.item-content {
+  padding: 20rpx;
+}
+
+.item-title {
+  font-size: 28rpx;
+  line-height: 1.4;
+  color: #333;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  padding-top: 10rpx;
+  border-top: 1rpx solid #eee;
+
+  .user-name {
+    font-size: 24rpx;
+    color: #666;
+    margin-left: 15rpx;
+  }
+}
+
+.avatar {
+  width: 50rpx;
+  height: 50rpx;
+}
+
+.loading {
+  padding: 40rpx 0;
+  color: #999;
+  text-align: center;
 }
