@@ -144,6 +144,10 @@ useReachBottom(() => {
 });
 
 // 页面加载时获取数据
-loadTravelCards();
+onMounted(() => {
+  const page = 1; // 初始页码
+  const limit = 10; // 每页显示的数量
+  loadTravelCards(page,limit);
+});
 
 </script>

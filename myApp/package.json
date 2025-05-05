@@ -51,6 +51,7 @@
     "@tarojs/taro": "3.6.33",
     "axios": "^1.9.0",
     "pinia": "^2.0.10",
+    "pinia-plugin-persistedstate": "^4.2.0",
     "taro-ui-vue3": "^1.0.0-alpha.21",
     "vue": "^3.2.24"
   },
