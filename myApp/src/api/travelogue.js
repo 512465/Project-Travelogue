@@ -1,6 +1,5 @@
 import { get } from "../utils/request";
 
-// 获取所有游记
 export const getTravelogs = (data) => {
   const { page, limit, travelogueStatus, keyword } = data;
   // 构建基础的 URL

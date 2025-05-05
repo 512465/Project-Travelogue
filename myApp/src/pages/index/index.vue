@@ -39,6 +39,7 @@ let page = 1; // 当前页数
 const hasMore = ref(true); // 是否还有更多数据
 const defaultAvatar = 'https://img.soogif.com/esrLXK1tXYDebZBHAKgmGx58EZd1smzH.jpeg_s400x0';
 
+
 // 分页查询函数
 const loadTravelCards = async (isRefresh = false) => {
   if (loading.value || !hasMore.value && !isRefresh) return;
@@ -144,6 +145,10 @@ useReachBottom(() => {
 });
 
 // 页面加载时获取数据
-loadTravelCards();
+onMounted(() => {
+  const page = 1; // 初始页码
+  const limit = 10; // 每页显示的数量
+  loadTravelCards(page,limit);
+});
 
 </script>

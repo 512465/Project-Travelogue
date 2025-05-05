@@ -14,7 +14,9 @@
       "ignore": [],
       "disablePlugins": [],
       "outputPath": ""
-    }
+    },
+    "minifyWXSS": false,
+    "minifyWXML": false
   },
   "compileType": "miniprogram",
   "libVersion": "3.8.3",
