@@ -45,7 +45,6 @@
 <script setup>
 import './index.scss';
 import { ref, onMounted } from 'vue';
-import { ref, onMounted } from 'vue';
 import { AtSearchBar } from 'taro-ui-vue3';
 import Taro, { usePullDownRefresh, useReachBottom } from '@tarojs/taro';
 import { getTravelogs, searchTravelogs } from '../../api/travelogue.js'
