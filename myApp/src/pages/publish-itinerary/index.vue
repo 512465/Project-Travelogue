@@ -29,7 +29,7 @@
       </view>
       <view class="input-wrapper">
         <textarea class="textarea" focus="true" v-model="content" height="200" :maxLength="200" placeholder="请输入内容"
-                  @input="handleContentInput" />
+          @input="handleContentInput" />
         <text class="counter">{{ remainingContentCount }}/200</text>
       </view>
 
@@ -222,6 +222,9 @@ const onPublish = async () => {
     title.value = ''
     content.value = ''
     files.value = []
+    setTimeout(() => {
+      Taro.reLaunch({ url: '/pages/travel-notes/index' })
+    }, 800);
   }).catch((err) => {
     Taro.hideLoading()
     Taro.showToast({ title: '发布失败', icon: 'none' })
