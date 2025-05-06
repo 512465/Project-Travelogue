@@ -94,8 +94,6 @@ const handleDelete = (id) => {
     content: '确定要删除这篇游记吗？',
     async success(res) {
       if (res.confirm) {
-        const index = travelList.findIndex(item => item.id === id)
-        travelList.splice(index, 1)
         await Taro.request({
           url: `http://127.0.0.1:3000/api/travelogue/${id}`,
           method: 'DELETE',
