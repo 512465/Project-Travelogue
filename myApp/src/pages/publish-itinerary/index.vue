@@ -51,6 +51,7 @@
 import { computed, ref } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore } from '../../stores/modules/user'
+import { publishTravelogue } from '../../api/travelogue'
 
 // 存储已上传文件（图片或视频）
 const files = ref([])
@@ -198,7 +199,7 @@ const onCheckChange = (e) => {
   checked.value = e.detail.value.length > 0
 }
 
-const onPublish = () => {
+const onPublish = async () => {
   if (!checked.value) {
     Taro.showToast({ title: '请勾选协议', icon: 'none' })
     return
@@ -210,10 +211,22 @@ const onPublish = () => {
   }
 
   Taro.showLoading({ title: '发布中...' })
-  setTimeout(() => {
+  await publishTravelogue({
+    travelogueTitle: title.value,
+    travelogueContent: content.value,
+    travelogueCover: files.value[0].url,
+    travelogueImages: files.value
+  }).then((res) => {
+    console.log(res)
     Taro.hideLoading()
     Taro.showToast({ title: '发布成功', icon: 'success' })
-  }, 1000)
+    title.value = ''
+    content.value = ''
+    files.value = []
+  }).catch((err) => {
+    Taro.hideLoading()
+    Taro.showToast({ title: '发布失败', icon: 'none' })
+  })
 }
 </script>
 
@@ -376,24 +389,5 @@ checkbox-group {
 
 checkbox {
   margin-right: 8rpx;
-}
-
-.image-wrapper {
-  position: relative;
-  display: inline-block;
-  margin: 8px;
-}
-
-.cover-label {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  background: linear-gradient(135deg, #ff7e5f, #feb47b);
-  /* 渐变背景色 */
-  color: white;
-  font-size: 12px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: bold;
 }
 </style>
