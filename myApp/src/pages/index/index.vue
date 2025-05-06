@@ -2,13 +2,13 @@
   <view class="container">
     <view>
       <AtSearchBar @clear="onClear" v-model:value="searchQuery" placeholder="搜索游记标题或作者昵称"
-                   @action-click="debouncedSearch" />
+        @action-click="debouncedSearch" />
     </view>
     <view class="waterfall-container">
       <!-- 左列 -->
       <view class="waterfall-column-left" id="leftColumn">
         <view v-for="(item, index) in leftItems" :key="item.travelogueId" class="waterfall-item"
-              @tap="gotoDetail(item.travelogueId)">
+          @tap="gotoDetail(item.travelogueId)">
           <view v-if="item.isImage" class="item-image-wrapper" :style="{
             paddingBottom: (item.travelogueCoverHeight && item.travelogueCoverWidth)
               ? (item.travelogueCoverHeight / item.travelogueCoverWidth * 100) + '%'
@@ -24,7 +24,7 @@
           <view class="item-content">
             <text class="item-title">{{ item.travelogueTitle }}</text>
             <view class="user-info">
-              <image class="avatar" :src="item.authorAvatar || defaultAvatar" />
+              <image class="avatar" :src="'http://127.0.0.1:3000' + item.userAvatar || defaultAvatar" />
               <text class="user-name">{{ item.travelogueAuthor }}</text>
             </view>
           </view>
@@ -34,7 +34,7 @@
       <!-- 右列 -->
       <view class="waterfall-column-right" id="rightColumn">
         <view v-for="(item, index) in rightItems" :key="item.travelogueId" class="waterfall-item"
-              @tap="gotoDetail(item.travelogueId)">
+          @tap="gotoDetail(item.travelogueId)">
           <view v-if="item.isImage" class="item-image-wrapper" :style="{
             paddingBottom: (item.travelogueCoverHeight && item.travelogueCoverWidth)
               ? (item.travelogueCoverHeight / item.travelogueCoverWidth * 100) + '%'
@@ -50,7 +50,7 @@
           <view class="item-content">
             <text class="item-title">{{ item.travelogueTitle }}</text>
             <view class="user-info">
-              <image class="avatar" :src="item.authorAvatar || defaultAvatar" />
+              <image class="avatar" :src="'http://127.0.0.1:3000' + item.userAvatar || defaultAvatar" />
               <text class="user-name">{{ item.travelogueAuthor }}</text>
             </view>
           </view>

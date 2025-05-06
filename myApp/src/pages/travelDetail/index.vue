@@ -98,7 +98,7 @@ const current = ref(0)
 const duration = 500
 const interval = 5000
 const imgs = ref([])
-const severUrl = 'http://localhost:3000/'
+const severUrl = 'http://localhost:3000'
 const imgUrls = ref([])
 const id = ref(Taro.getCurrentInstance().router?.params?.id || '')
 
