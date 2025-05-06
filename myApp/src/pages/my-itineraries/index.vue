@@ -33,7 +33,7 @@
 
 <script setup>
 import './index.scss'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { Button, Image } from '@tarojs/components'
 import { useUserStore } from '../../stores/index.js'
@@ -42,9 +42,9 @@ const userStore = useUserStore()
 const token = userStore.token
 console.log(userStore.token)
 console.log(userStore.userInfo)
-const avatar = ref('https://uploadstatic.mihoyo.com/contentweb/20200319/2020031921552395638.jpg')
+const avatar = ref('')
 if (userStore.userInfo.userAvatar) {
-  avatar.value = userStore.userInfo.userAvatar
+  avatar.value = 'http://127.0.0.1:3000' + userStore.userInfo.userAvatar
 }
 console.log(avatar.value)
 
@@ -126,7 +126,8 @@ const uploadFile = async (file) => {
       const data = res.data.data.newData
       data.userAvatar = res.data.data.newAvatar
       userStore.setUserInfo(data)
-      avatar.value = userStore.userInfo.userAvatar
+      avatar.value = ''
+      avatar.value = 'http://127.0.0.1:3000' + userStore.userInfo.userAvatar
       Taro.showToast({ title: '修改头像成功', icon: 'success' })
     }
   } catch (error) {
