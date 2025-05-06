@@ -111,9 +111,9 @@ const Dashboard = () => {
   ];
 
   return (
-    <div>
+    <div style={{ width: '100%', padding: '20px', maxWidth: '100%', boxSizing: 'border-box' }}>
       <Title level={2}>仪表盘</Title>
-      <Row gutter={16}>
+      <Row gutter={24}>
         <Col span={6}>
           <Card>
             <Statistic
@@ -158,14 +158,18 @@ const Dashboard = () => {
         </Col>
       </Row>
 
-      <div style={{ marginTop: 24 }}>
+      <div style={{ marginTop: 24, width: '100%' }}>
         <Title level={4}>最近审核</Title>
-        <Table
-          columns={columns}
-          dataSource={recentReviews}
-          loading={loading}
-          pagination={false}
-        />
+        <Card style={{ width: '100%' }}>
+          <Table
+            columns={columns}
+            dataSource={recentReviews}
+            loading={loading}
+            pagination={false}
+            style={{ width: '100%' }}
+            scroll={{ x: 'max-content' }}
+          />
+        </Card>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // 创建axios实例
 const api = axios.create({
-  baseURL: '/api', // 基础URL，实际项目中替换为真实API地址
+  baseURL: 'http://localhost:3000', // 后端服务地址
   timeout: 10000, // 请求超时时间
 });
 
@@ -38,8 +38,10 @@ api.interceptors.response.use(
 
 // 用户相关API
 export const userApi = {
+  // 注册
+  register: (data) => api.post('/api/admin', data),
   // 登录
-  login: (data) => api.post('/auth/login', data),
+  login: (data) => api.post('/api/auth-admin/login', data),
   // 获取用户信息
   getUserInfo: () => api.get('/user/info'),
   // 获取用户列表

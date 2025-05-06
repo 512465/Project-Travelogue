@@ -126,11 +126,12 @@ const MainLayout = () => {
       </Header>
       <Content
         style={{
-          margin: '88px 16px 24px',
+          margin: '88px 0 24px',
           padding: 24,
           minHeight: 280,
           background: colorBgContainer,
           borderRadius: borderRadiusLG,
+          width: '100%',
         }}
       >
         <Outlet />

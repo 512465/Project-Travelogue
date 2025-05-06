@@ -146,7 +146,7 @@ const ReviewDetail = () => {
   }
 
   return (
-    <div>
+    <div style={{ width: '100%', padding: '20px 40px', boxSizing: 'border-box' }}>
       <div style={{ marginBottom: 16 }}>
         <Button icon={<ArrowLeftOutlined />} onClick={handleBack}>
           返回列表
@@ -155,8 +155,8 @@ const ReviewDetail = () => {
 
       <Title level={2}>审核详情</Title>
 
-      <Card title="基本信息" style={{ marginBottom: 16 }}>
-        <Descriptions bordered column={2}>
+      <Card title="基本信息" style={{ marginBottom: 16, width: '100%' }}>
+        <Descriptions bordered column={2} style={{ width: '100%' }}>
           <Descriptions.Item label="审核ID">{review.id}</Descriptions.Item>
           <Descriptions.Item label="审核状态">{renderStatusTag(review.status)}</Descriptions.Item>
           <Descriptions.Item label="标题">{review.title}</Descriptions.Item>
@@ -166,8 +166,8 @@ const ReviewDetail = () => {
         </Descriptions>
       </Card>
 
-      <Card title="内容详情" style={{ marginBottom: 16 }}>
-        <Paragraph>{review.content}</Paragraph>
+      <Card title="内容详情" style={{ marginBottom: 16, width: '100%' }}>
+        <Paragraph style={{ width: '100%' }}>{review.content}</Paragraph>
 
         {review.images && review.images.length > 0 && (
           <div style={{ marginTop: 16 }}>
@@ -186,8 +186,8 @@ const ReviewDetail = () => {
         )}
       </Card>
 
-      <Card title="提交人信息" style={{ marginBottom: 16 }}>
-        <Descriptions bordered column={2}>
+      <Card title="提交人信息" style={{ marginBottom: 16, width: '100%' }}>
+        <Descriptions bordered column={2} style={{ width: '100%' }}>
           <Descriptions.Item label="用户ID">{review.submitterInfo.id}</Descriptions.Item>
           <Descriptions.Item label="姓名">{review.submitterInfo.name}</Descriptions.Item>
           <Descriptions.Item label="手机号">{review.submitterInfo.phone}</Descriptions.Item>
@@ -197,8 +197,8 @@ const ReviewDetail = () => {
         </Descriptions>
       </Card>
 
-      <Card title="评价对象信息" style={{ marginBottom: 16 }}>
-        <Descriptions bordered column={2}>
+      <Card title="评价对象信息" style={{ marginBottom: 16, width: '100%' }}>
+        <Descriptions bordered column={2} style={{ width: '100%' }}>
           <Descriptions.Item label="对象ID">{review.targetInfo.id}</Descriptions.Item>
           <Descriptions.Item label="名称">{review.targetInfo.name}</Descriptions.Item>
           <Descriptions.Item label="地址">{review.targetInfo.address}</Descriptions.Item>
@@ -207,8 +207,8 @@ const ReviewDetail = () => {
         </Descriptions>
       </Card>
 
-      <Card title="审核历史">
-        <Descriptions bordered column={1}>
+      <Card title="审核历史" style={{ width: '100%' }}>
+        <Descriptions bordered column={1} style={{ width: '100%' }}>
           {review.reviewHistory.map((history, index) => (
             <Descriptions.Item
               key={index}

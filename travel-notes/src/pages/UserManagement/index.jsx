@@ -210,7 +210,7 @@ const UserManagement = () => {
   };
 
   return (
-    <div>
+    <div style={{ width: '100%', padding: '20px', maxWidth: '100%', boxSizing: 'border-box' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
         <Title level={2}>用户管理</Title>
         <Button
@@ -228,6 +228,8 @@ const UserManagement = () => {
         rowKey="id"
         loading={loading}
         pagination={{ pageSize: 10 }}
+        style={{ width: '100%' }}
+        scroll={{ x: 'max-content' }}
       />
 
       <Modal

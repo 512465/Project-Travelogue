@@ -224,7 +224,7 @@ const ReviewList = () => {
   ];
 
   return (
-    <div>
+    <div style={{ width: '100%', padding: '20px', maxWidth: '100%', boxSizing: 'border-box' }}>
       <Title level={2}>审核管理</Title>
 
       <div style={{ marginBottom: 16 }}>
@@ -262,7 +262,8 @@ const ReviewList = () => {
         rowKey="id"
         loading={loading}
         pagination={{ pageSize: 10 }}
-        scroll={{ x: 1200 }}
+        style={{ width: '100%' }}
+        scroll={{ x: 'max-content' }}
       />
     </div>
   );
