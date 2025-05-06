@@ -33,7 +33,7 @@ export class UserEntity {
   })
   userPassword: string; // 用户密码，非空
 
-  @Column({ default: 'uploads/1.png' })
+  @Column({ default: '' })
   userAvatar: string; // 用户头像，非空
 
   // 用户与游记的关系，一个用户可以有多个游记
