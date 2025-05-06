@@ -22,12 +22,17 @@
           <swiper class="test-h" indicatorColor="#999" indicatorActiveColor="#333" :current="current"
                   :duration="duration" :interval="interval" circular="true" autoplay="true" indicatorDots="true"
                   @change="onSwiperChange">
-            <swiper-item v-for="(item, idx) in imgUrls" :key="idx">
-              <image :src="item" class="slide-image" />
+            <swiper-item v-for="(item, idx) in imgs" :key="idx">
+              <view v-if="item.type === 'video'" @tap="playVideo(item)">
+                <video :src="item.url" id="myVideo" controls class="slide-image" />
+              </view>
+              <view v-else @tap="viewImage(item.url)">
+                <image :src="item.url" class="slide-image" />
+              </view>
             </swiper-item>
           </swiper>
           <view class="swiper-indicator">
-            {{ current + 1 }}/{{ imgUrls.length }}
+            {{ current + 1 }}/{{ imgs.length }}
           </view>
         </view>
 
@@ -73,7 +78,7 @@
 import './index.scss'
 import { ref, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
-// import { getTravelogueDetail } from '../../api/travelogue.js'
+import { useUserStore } from '../../stores/modules/user'
 import {
   AtLoading,
   AtIcon,
@@ -83,10 +88,8 @@ import {
 } from 'taro-ui-vue3'
 // const id = ref(Taro.getCurrentInstance().router?.params?.id || '')
 // console.log(id.value)
-const token =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJOYW1lIjoiVXNlcjEyMyIsImlhdCI6MTc0NjE3MTI5NiwiZXhwIjoxNzQ2Nzc2MDk2fQ.2MB5y7xB8AZC_vgebYbQguiipZQcB02AwYcF2ImSe9s'
 
-
+const userStore = useUserStore()
 // 响应式状态
 const loading = ref(true)
 const error = ref('')
@@ -94,12 +97,9 @@ const detail = ref(null)
 const current = ref(0)
 const duration = 500
 const interval = 5000
-const severUrl = 'http://localhost:3000'
-const imgUrls = [
-  'http://localhost:3000/uploads/9ec01d910eb95f0476e894622b87875c6cd62df87188b14f752344a8be751810.png',
-  'http://localhost:3000/uploads/6062ff90c5baf81ea3b6768f10c706a16eedded7a1ea095a79fd7a354029fb74.png',
-  'http://localhost:3000/uploads/4996b8ff888472570028606c8b2a3fcb9ecd7d8e82b92664cc3de50f8fab0fc8.png'
-]
+const imgs = ref([])
+const severUrl = 'http://localhost:3000/'
+const imgUrls = ref([])
 const id = ref(Taro.getCurrentInstance().router?.params?.id || '')
 
 const formatDate = timestamp =>
@@ -118,11 +118,17 @@ const fetchData = async () => {
       url: `http://127.0.0.1:3000/api/travelogue/${id.value}`,
       method: 'GET',
       header: {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${userStore.token}`
       }
     })
     detail.value = res.data.data
-    console.log(detail.value)
+    imgs.value = detail.value.travelogueImages.map((item) => {
+      return {
+        url: item.url,
+        type: item.type
+      }
+    })
+    console.log(imgs.value)
     Taro.setNavigationBarTitle({ title: res.data.data.travelogueTitle })
   } catch (err) {
     error.value = '数据加载失败'
@@ -135,7 +141,29 @@ const onSwiperChange = (e) => {
   current.value = e.detail.current
 }
 
+// 视频点击处理方法
+const playVideo = (item) => {
+  if (item.type === 'video') {
+    Taro.previewMedia({
+      sources: [
+        {
+          url: item.url,
+          type: 'video'
+        }
+      ],
+      current: 0
+    })
+  }
+}
 
+
+// 图片点击查看方法
+const viewImage = (url) => {
+  Taro.previewImage({
+    current: url,  // 当前显示的图片链接
+    urls: imgs.value.map(item => item.url)  // 所有图片的链接
+  })
+}
 // 生命周期
 onMounted(() => {
   if (!id.value) {
