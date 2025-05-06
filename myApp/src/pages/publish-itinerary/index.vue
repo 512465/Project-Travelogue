@@ -27,7 +27,12 @@
         <input v-model="title" class="input" placeholder="请输入标题" maxlength="20" @input="handleTitleInput" />
         <text class="counter">{{ remainingTitleCount }}/20</text>
       </view>
-      <textarea class="textarea" focus="true" v-model="content" height="200" :maxLength="200" placeholder="请输入内容" />
+      <view class="input-wrapper">
+        <textarea class="textarea" focus="true" v-model="content" height="200" :maxLength="200" placeholder="请输入内容"
+                  @input="handleContentInput" />
+        <text class="counter">{{ remainingContentCount }}/200</text>
+      </view>
+
     </view>
 
     <view class="agreement">
@@ -45,23 +50,27 @@
 <script setup>
 import { computed, ref } from 'vue'
 import Taro from '@tarojs/taro'
-import { AtTextarea } from 'taro-ui-vue3'
+import { useUserStore } from '../../stores/modules/user'
 
 // 存储已上传文件（图片或视频）
 const files = ref([])
 const title = ref('')
 const content = ref('')
 const checked = ref(false)
-
+const userStore = useUserStore()
+// 封面
+const travelogueCover = ref('')
+//标题计算
 const remainingTitleCount = computed(() => 20 - title.value.length)
+// 内容计算
+const remainingContentCount = computed(() => 200 - content.value.length)
 
-const token =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJOYW1lIjoiVXNlcjEyMyIsImlhdCI6MTc0NjE3MTI5NiwiZXhwIjoxNzQ2Nzc2MDk2fQ.2MB5y7xB8AZC_vgebYbQguiipZQcB02AwYcF2ImSe9s'
 
 // 是否还可以继续添加文件
 const canAddMore = computed(() => {
-  const hasVideo = files.value.some((f) => f.type === 'video')
-  return files.value.length < 9 && !hasVideo
+  const videoCount = files.value.filter(f => f.type === 'video').length
+  const imageCount = files.value.filter(f => f.type === 'image').length
+  return videoCount <= 1 && imageCount < (videoCount === 1 ? 8 : 9)
 })
 
 // 添加文件（图片/视频）
@@ -76,12 +85,6 @@ const handleAddFile = async () => {
     })
 
     const tempFiles = res.tempFiles
-    const hasVideo = tempFiles.some((f) => f.fileType === 'video')
-
-    if (hasVideo && files.value.length > 0) {
-      Taro.showToast({ title: '视频需单独上传', icon: 'none' })
-      return
-    }
 
     for (const file of tempFiles) {
       await uploadFile(file)
@@ -95,23 +98,40 @@ const handleAddFile = async () => {
 const uploadFile = async (file) => {
   Taro.showLoading({ title: '上传中...' })
 
+  if (!userStore.token) {
+    Taro.showToast({ title: '请先登录', icon: 'none' })
+    return
+  }
+
   try {
     const res = await Taro.uploadFile({
       url: 'http://localhost:3000/api/upload',
       filePath: file.tempFilePath,
       name: 'file',
       header: {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${userStore.token}`
       }
     })
 
     const result = JSON.parse(res.data)
     if (result.data?.url) {
-      files.value.push({
+      const newFile = {
         type: file.fileType,
         url: 'http://localhost:3000' + result.data.url,
         thumb: file.fileType === 'image' ? file.tempFilePath : null
-      })
+      }
+      if (file.fileType === 'video') {
+        const hasVideo = files.value.length > 0 && files.value[0].type === 'video'
+        if (hasVideo) {
+          Taro.showToast({ title: '只能上传一个视频', icon: 'none' })
+          return
+        }
+        // 插入到第一个位置
+        files.value.unshift(newFile)
+      } else {
+        // 图片逻辑：插入列表最后
+        files.value.push(newFile)
+      }
       Taro.showToast({ title: '上传成功', icon: 'success' })
     }
   } catch (error) {
@@ -161,6 +181,18 @@ const handleTitleInput = (e) => {
   }
 }
 
+const handleContentInput = (e) => {
+  content.value = e.detail.value
+  if (remainingContentCount.value <= 0) {
+    Taro.showToast({
+      title: '内容已达最大字数限制',
+      icon: 'none',
+      duration: 1500
+    })
+  }
+}
+
+
 // 修改后的协议勾选处理
 const onCheckChange = (e) => {
   checked.value = e.detail.value.length > 0
@@ -195,7 +227,7 @@ const onPublish = () => {
 .file-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 20rpx;
+  gap: 18rpx;
   margin-bottom: 20rpx;
 }
 
@@ -265,6 +297,7 @@ const onPublish = () => {
 
 .input,
 .textarea {
+  width: auto;
   background: #fff;
   border-radius: 10rpx;
   padding: 20rpx;
@@ -272,6 +305,7 @@ const onPublish = () => {
   margin-bottom: 30rpx;
   border: 1px solid #d6e4ef;
 }
+
 
 .agreement {
   position: fixed;
@@ -342,5 +376,24 @@ checkbox-group {
 
 checkbox {
   margin-right: 8rpx;
+}
+
+.image-wrapper {
+  position: relative;
+  display: inline-block;
+  margin: 8px;
+}
+
+.cover-label {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: linear-gradient(135deg, #ff7e5f, #feb47b);
+  /* 渐变背景色 */
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
 }
 </style>

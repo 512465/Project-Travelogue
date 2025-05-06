@@ -20,7 +20,8 @@
         <!-- 轮播图 -->
         <view class="swiper-wrapper">
           <swiper class="test-h" indicatorColor="#999" indicatorActiveColor="#333" :current="current"
-                  :duration="duration" :interval="interval" circular autoplay indicatorDots @change="onSwiperChange">
+                  :duration="duration" :interval="interval" circular="true" autoplay="true" indicatorDots="true"
+                  @change="onSwiperChange">
             <swiper-item v-for="(item, idx) in imgUrls" :key="idx">
               <image :src="item" class="slide-image" />
             </swiper-item>
@@ -42,7 +43,7 @@
           <view class="content">
             {{ detail.travelogueContent }}
           </view>
-          <text class="edit-time">编辑于 {{ formatDate(detail?.updatedAt || detail?.updateTime) }}  |</text>
+          <text class="edit-time">编辑于 {{ formatDate(detail?.updatedAt || detail?.updateTime) }} |</text>
         </view>
       </template>
     </scroll-view>
