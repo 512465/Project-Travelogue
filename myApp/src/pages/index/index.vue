@@ -1,8 +1,10 @@
 <template>
   <view class="container">
     <view>
-      <AtSearchBar @clear="onClear" v-model:value="searchQuery" placeholder="搜索游记标题或作者昵称"
-                   @action-click="debouncedSearch" />
+      <view>
+        <AtSearchBar @clear="onClear" v-model:value="searchQuery" placeholder="搜索游记标题或作者昵称"
+          @action-click="debouncedSearch" />
+      </view>
     </view>
     <view class="waterfall-container">
       <!-- 左列 -->

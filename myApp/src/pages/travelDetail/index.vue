@@ -48,7 +48,7 @@
           <view class="content">
             {{ detail.travelogueContent }}
           </view>
-          <text class="edit-time">编辑于 {{ formatDate(detail?.updatedAt || detail?.updateTime) }} |</text>
+          <text class="edit-time">编辑于 {{ formatDate(detail?.updatedAt || detail?.updateTime) }}  |</text>
         </view>
       </template>
     </scroll-view>

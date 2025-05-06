@@ -35,6 +35,13 @@ export class UserController {
     return userInfo;
   }
 
+  // 更新头像
+  @Patch('avatar')
+  @UseGuards(AuthUserGuard)
+  updateAvatar(@Body('userAvatar') userAvatar: string, @Request() req) {
+    return this.userService.updateAvatar(req.user.sub, userAvatar);
+  }
+
   @Patch(':id')
   @UseGuards(AuthUserGuard)
   update(
