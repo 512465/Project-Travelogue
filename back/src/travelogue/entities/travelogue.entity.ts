@@ -83,6 +83,14 @@ export class TravelogueEntity {
   })
   travelogueAuthor: string;
 
+  // 游记图片
+  @Column({
+    type: 'json',
+    nullable: true,
+    name: 'travelogue_images',
+  })
+  travelogueImages: string[];
+
   // 关联用户实体，一个用户可以有多篇游记
   @ManyToOne(() => UserEntity, (user) => user.travelogues, { nullable: false })
   @JoinColumn({ name: 'travelogue_user_id' }) // 外键列名

@@ -34,8 +34,8 @@ const request = async (method, url, data = {}, config = {}) => {
     Taro.hideLoading()
 
     // 响应拦截器
-    if (response.statusCode === 200) {
-      if (response.data.code === 200) {
+    if (response.statusCode) {
+      if (response.data.code) {
         return response.data
       }
     } else {

@@ -3,7 +3,7 @@
     <view>
       <view>
         <AtSearchBar @clear="onClear" v-model:value="searchQuery" placeholder="搜索游记标题或作者昵称"
-                     @action-click="debouncedSearch" />
+          @action-click="debouncedSearch" />
       </view>
     </view>
     <view class="waterfall-container">
@@ -44,6 +44,7 @@
 
 <script setup>
 import './index.scss';
+import { ref, onMounted } from 'vue';
 import { ref, onMounted } from 'vue';
 import { AtSearchBar } from 'taro-ui-vue3';
 import Taro, { usePullDownRefresh, useReachBottom } from '@tarojs/taro';
