@@ -1,4 +1,4 @@
-import { get } from "../utils/request";
+import { get,post } from "../utils/request";
 
 // 获取所有游记
 export const getTravelogs = (data) => {
@@ -25,4 +25,9 @@ export const searchTravelogs = (keyword) => {
 // 获取游记详情
 export const getTravelogueDetail = (id) => {
   return get(`/api/travelogue/${id}`)
+}
+
+// 发布游计
+export const publishTravelogue = (data) => {
+  return post('/api/travelogue', data)
 }
