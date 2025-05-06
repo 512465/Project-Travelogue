@@ -95,7 +95,7 @@ export class UserService {
     const newUser = await this.userRepository.save(newUserData);
     const { userPassword, ...result } = newUser;
     const newData = result;
-    const newAvatar = `http://127.0.0.1:3000${newData.userAvatar}`;
+    const newAvatar = newData.userAvatar;
     return { newData, newAvatar };
   }
 
