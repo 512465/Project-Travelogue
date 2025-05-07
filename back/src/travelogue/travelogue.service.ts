@@ -143,6 +143,66 @@ export class TravelogueService {
     }
   }
 
+  async like(id: number, userId: number) {
+    const travelogue = await this.travelogueRepository.findOne({
+      where: { travelogueId: id },
+    });
+    if (!travelogue) {
+      throw new NotFoundException('游记不存在');
+    }
+    const user = await this.userRepository.findOne({ where: { userId } });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+    // console.log(user);
+    user.userLikes = user.userLikes || [];
+    // 检查用户是否已经点赞过
+    if (user.userLikes.includes(id)) {
+      throw new ForbiddenException('你已经点赞过了');
+    }
+    user.userLikes.push(id);
+    await this.userRepository.save(user); // 保存更新后的用户
+    console.log(user);
+    travelogue.travelogueLikes += 1; // 增加点赞数
+    await this.travelogueRepository.save(travelogue); // 保存更新后的游记
+    return travelogue;
+  }
+
+  async userCollects(id: number, userId: number) {
+    const travelogue = await this.travelogueRepository.findOne({
+      where: { travelogueId: id },
+    });
+    if (!travelogue) {
+      throw new NotFoundException('游记不存在');
+    }
+    const user = await this.userRepository.findOne({ where: { userId } });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+    user.userCollects = user.userCollects || [];
+    // 检查用户是否已经收藏过
+    if (user.userCollects.includes(id)) {
+      throw new ForbiddenException('你已经收藏过了');
+    }
+    user.userCollects.push(id);
+    await this.userRepository.save(user); // 保存更新后的用户
+    travelogue.travelogueCollects += 1; // 增加收藏数
+    await this.travelogueRepository.save(travelogue); // 保存更新后的游记
+    return travelogue;
+  }
+
+  async travelogueViews(id: number) {
+    const travelogue = await this.travelogueRepository.findOne({
+      where: { travelogueId: id },
+    });
+    if (!travelogue) {
+      throw new NotFoundException('游记不存在');
+    }
+    travelogue.travelogueViews += 1; // 增加浏览数
+    await this.travelogueRepository.save(travelogue); // 保存更新后的游记
+    return travelogue;
+  }
+
   async findOne(id: number) {
     const travelogue = await this.travelogueRepository.findOne({
       where: { travelogueId: id },

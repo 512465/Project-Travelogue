@@ -79,6 +79,24 @@ export class TravelogueController {
     );
   }
 
+  @Patch('like/:id')
+  @UseGuards(AuthUserGuard)
+  like(@Param('id') id: string, @Request() req) {
+    return this.travelogueService.like(+id, req.user.sub);
+  }
+
+  @Patch('travelogueViews/:id')
+  @UseGuards(AuthUserGuard)
+  travelogueViews(@Param('id') id: string) {
+    return this.travelogueService.travelogueViews(+id);
+  }
+
+  @Patch('userCollects/:id')
+  @UseGuards(AuthUserGuard)
+  userCollects(@Param('id') id: string, @Request() req) {
+    return this.travelogueService.userCollects(+id, req.user.sub);
+  }
+
   @Delete(':id')
   @UseGuards(AuthUserGuard)
   remove(@Param('id') id: string, @Request() req) {
