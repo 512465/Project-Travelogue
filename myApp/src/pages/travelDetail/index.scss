@@ -202,3 +202,11 @@
   height: 400rpx;
   object-fit: cover;
 }
+
+.share-btn{
+  background-color: #ffffff;
+  color: #fff;
+  &::after{
+    border: none;
+  }
+}

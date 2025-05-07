@@ -57,16 +57,19 @@
     <view class="footer-info-fixed">
       <view class="interaction-bar">
         <view class="interaction-item">
-          <at-icon value="heart" size="20" color="#666" />
+          <Button openType="share" class="share-btn">
+            <at-icon openType="share" value="external-link" size="20" color="#666" />
+          </Button>
+        </view>
+        <view class="interaction-item" @tap="handleLike">
+          <at-icon v-if="!isLike" value="heart" size="20" color="#666" />
+          <at-icon v-else value="heart-2" size="20" color="red" />
           <text>{{ detail?.likeCount || 0 }}</text>
         </view>
-        <view class="interaction-item">
-          <at-icon value="star" size="20" color="#666" />
+        <view class="interaction-item" @tap="handleCollect">
+          <at-icon v-if="!isisCollects" value="star" size="20" color="#666" />
+          <at-icon v-else value="star-2" size="20" color="red" />
           <text>{{ detail?.favoriteCount || 0 }}</text>
-        </view>
-        <view class="interaction-item">
-          <at-icon value="message" size="20" color="#666" />
-          <text>{{ detail?.commentCount || 0 }}</text>
         </view>
       </view>
     </view>
@@ -77,7 +80,7 @@
 <script setup>
 import './index.scss'
 import { ref, onMounted } from 'vue'
-import Taro from '@tarojs/taro'
+import Taro, { useShareAppMessage, useShareTimeline } from '@tarojs/taro'
 import { useUserStore } from '../../stores/modules/user'
 import {
   AtLoading,
@@ -100,6 +103,8 @@ const interval = 5000
 const imgs = ref([])
 const severUrl = 'https://travle.hub.feashow.cn'
 const imgUrls = ref([])
+const isLike = ref(false)
+const isCollects = ref(false)
 const id = ref(Taro.getCurrentInstance().router?.params?.id || '')
 
 const formatDate = timestamp =>
@@ -164,6 +169,23 @@ const viewImage = (url) => {
     urls: imgs.value.map(item => item.url)  // 所有图片的链接
   })
 }
+
+const handleLike = () => {
+  console.log('点赞')
+}
+
+const handleCollect = () => {
+  console.log('收藏')
+}
+
+useShareAppMessage(() => {
+  return {
+    title: detail.value?.travelogueTitle || '精彩游记',
+    path: `/pages/travel-detail/index?id=${id.value}`,
+    imageUrl: imgs.value[0]?.url || ''  // 分享缩略图
+  }
+})
+
 // 生命周期
 onMounted(() => {
   if (!id.value) {

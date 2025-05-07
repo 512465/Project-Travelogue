@@ -131,6 +131,7 @@
 
 .user-info {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   padding-top: 10rpx;
   border-top: 1rpx solid #eee;
@@ -139,6 +140,13 @@
     font-size: 24rpx;
     color: #666;
     margin-left: 15rpx;
+  }
+
+  .views-count{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8rpx;
   }
 }
 
@@ -181,18 +189,6 @@
   color: #333;
 }
 
-.user-info {
-  display: flex;
-  align-items: center;
-  padding-top: 10rpx;
-  border-top: 1rpx solid #eee;
-
-  .user-name {
-    font-size: 24rpx;
-    color: #666;
-    margin-left: 15rpx;
-  }
-}
 
 .avatar {
   width: 50rpx;
@@ -241,4 +237,9 @@ video.item-image {
   height: 100%;
   z-index: 5;
   background: transparent;
+}
+
+.avatar-wrapper{
+  display: flex;
+  align-items: center;
 }
