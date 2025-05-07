@@ -9,7 +9,7 @@
     <view class="travel-list">
       <view v-for="item in travelListItems" :key="item.travelogueId" class="travel-item">
         <image v-if="item.type" class="cover" :src="item.travelogueCover" mode="aspectFill" />
-        <video class="cover" :src="item.travelogueCover" />
+        <video v-else class="cover" :src="item.travelogueCover" />
         <view class="content">
           <view class="title">{{ item.travelogueTitle }}</view>
           <view class="desc">{{ truncateContent(item.travelogueContent) }}</view>
