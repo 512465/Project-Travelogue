@@ -158,14 +158,20 @@ export class TravelogueService {
     user.userLikes = user.userLikes || [];
     // 检查用户是否已经点赞过
     if (user.userLikes.includes(id)) {
-      throw new ForbiddenException('你已经点赞过了');
+      const res = user.userLikes.filter((item) => item !== id); // 过滤掉已经点赞的游记ID
+      user.userLikes = res; // 更新用户的点赞列表
+      travelogue.travelogueLikes -= 1; // 减少点赞数
+      await this.userRepository.save(user); // 保存更新后的用户
+      await this.travelogueRepository.save(travelogue); // 保存更新后的游记
+      return travelogue;
+    } else {
+      user.userLikes.push(id);
+      await this.userRepository.save(user); // 保存更新后的用户
+      console.log(user);
+      travelogue.travelogueLikes += 1; // 增加点赞数
+      await this.travelogueRepository.save(travelogue); // 保存更新后的游记
+      return travelogue;
     }
-    user.userLikes.push(id);
-    await this.userRepository.save(user); // 保存更新后的用户
-    console.log(user);
-    travelogue.travelogueLikes += 1; // 增加点赞数
-    await this.travelogueRepository.save(travelogue); // 保存更新后的游记
-    return travelogue;
   }
 
   async userCollects(id: number, userId: number) {
@@ -182,13 +188,19 @@ export class TravelogueService {
     user.userCollects = user.userCollects || [];
     // 检查用户是否已经收藏过
     if (user.userCollects.includes(id)) {
-      throw new ForbiddenException('你已经收藏过了');
+      const res = user.userCollects.filter((item) => item !== id); // 过滤掉已经收藏的游记ID
+      user.userCollects = res; // 更新用户的收藏列表
+      travelogue.travelogueCollects -= 1; // 减少收藏数
+      await this.userRepository.save(user); // 保存更新后的用户
+      await this.travelogueRepository.save(travelogue); // 保存更新后的游记
+      return travelogue;
+    } else {
+      user.userCollects.push(id);
+      await this.userRepository.save(user); // 保存更新后的用户
+      travelogue.travelogueCollects += 1; // 增加收藏数
+      await this.travelogueRepository.save(travelogue); // 保存更新后的游记
+      return travelogue;
     }
-    user.userCollects.push(id);
-    await this.userRepository.save(user); // 保存更新后的用户
-    travelogue.travelogueCollects += 1; // 增加收藏数
-    await this.travelogueRepository.save(travelogue); // 保存更新后的游记
-    return travelogue;
   }
 
   async travelogueViews(id: number) {
