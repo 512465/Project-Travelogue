@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useDispatch } from 'react-redux'; // 引入 useDispatch
+import { login as loginAction } from '../../store'; // 引入 login action
 import { Form, Input, Button, Card, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -8,6 +10,7 @@ import './index.css';
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch(); // 获取 dispatch 函数
 
   // 处理登录
   const handleLogin = async (values) => {
@@ -22,9 +25,10 @@ const Login = () => {
       console.log('Login response:', response); // 打印 API 响应
       // 根据新的响应体结构检查登录是否成功并获取 token
       if (response && response.success && response.data && response.data.access_token) {
-        // 保存登录状态
-        console.log('Login successful, token:', response.data.access_token);
-        localStorage.setItem('token', response.data.access_token);
+        // 派发 login action
+        const { access_token, ...userData } = response.data; // 假设 response.data 包含 access_token 和其他用户信息
+        dispatch(loginAction({ user: userData, token: access_token }));
+        console.log('Login successful, token:', access_token);
         message.success(response.message || '登录成功'); // 使用 API 返回的 message
         navigate('/dashboard'); // 登录成功后跳转到仪表盘
       } else {
