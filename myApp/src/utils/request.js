@@ -2,7 +2,7 @@
 import Taro from '@tarojs/taro'
 import { useUserStore } from '../stores/index'
 
-const BASE_URL = 'https://travle.hub.feashow.cn' // 根据环境变量动态配置更佳
+const BASE_URL = 'http://175.24.138.67:8586' // 根据环境变量动态配置更佳
 
 const request = async (method, url, data = {}, config = {}) => {
   // 合并配置
