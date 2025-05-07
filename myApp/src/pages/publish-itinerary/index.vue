@@ -29,7 +29,7 @@
       </view>
       <view class="input-wrapper">
         <textarea class="textarea" focus="true" v-model="content" height="200" :maxLength="250" placeholder="请输入内容"
-          @input="handleContentInput" />
+                  @input="handleContentInput" />
         <text class="counter">{{ remainingContentCount }}/200</text>
       </view>
 
@@ -107,7 +107,7 @@ const uploadFile = async (file) => {
 
   try {
     const res = await Taro.uploadFile({
-      url: 'https://travle.hub.feashow.cn/api/upload',
+      url: 'http://175.24.138.67:8586/api/upload',
       filePath: file.tempFilePath,
       name: 'file',
       header: {
@@ -119,7 +119,7 @@ const uploadFile = async (file) => {
     if (result.data?.url) {
       const newFile = {
         type: file.fileType,
-        url: 'https://travle.hub.feashow.cn' + result.data.url,
+        url: 'http://175.24.138.67:8586' + result.data.url,
         thumb: file.fileType === 'image' ? file.tempFilePath : null
       }
       if (file.fileType === 'video') {

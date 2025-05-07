@@ -71,7 +71,7 @@ const userStore = useUserStore()
 const getTravelogs = async () => {
   try {
     const res = await Taro.request({
-      url: 'https://travle.hub.feashow.cn/api/travelogue',
+      url: 'http://175.24.138.67:8586/api/travelogue',
       method: 'GET',
       header: {
         Authorization: `Bearer ${userStore.token}`
@@ -130,7 +130,7 @@ const handleDelete = (id) => {
     async success(res) {
       if (res.confirm) {
         await Taro.request({
-          url: `https://travle.hub.feashow.cn/api/travelogue/${id}`,
+          url: `http://175.24.138.67:8586/api/travelogue/${id}`,
           method: 'DELETE',
           header: {
             Authorization: `Bearer ${userStore.token}`
