@@ -106,7 +106,7 @@ const uploadFile = async (file) => {
 
   try {
     const res = await Taro.uploadFile({
-      url: 'http://localhost:3000/api/upload',
+      url: 'https://travle.hub.feashow.cn/api/upload',
       filePath: file.tempFilePath,
       name: 'file',
       header: {
@@ -118,7 +118,7 @@ const uploadFile = async (file) => {
     if (result.data?.url) {
       const newFile = {
         type: file.fileType,
-        url: 'http://localhost:3000' + result.data.url,
+        url: 'https://travle.hub.feashow.cn' + result.data.url,
         thumb: file.fileType === 'image' ? file.tempFilePath : null
       }
       if (file.fileType === 'video') {

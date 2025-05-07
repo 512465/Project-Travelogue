@@ -43,7 +43,7 @@ const userStore = useUserStore()
 const getTravelogs = async () => {
   try {
     const res = await Taro.request({
-      url: 'http://127.0.0.1:3000/api/travelogue',
+      url: 'https://travle.hub.feashow.cn/api/travelogue',
       method: 'GET',
       header: {
         Authorization: `Bearer ${userStore.token}`
@@ -84,7 +84,7 @@ const handleAdd = () => {
 const handleEdit = (id) => {
   console.log('编辑游记')
   // 看看是不是要新开页面
-  Taro.navigateTo({ url: `/pages/edit/index?id=${id}` })
+  Taro.reLaunch({ url: `/pages/edit/index?id=${id}` })
 }
 
 // 删除游记
@@ -95,7 +95,7 @@ const handleDelete = (id) => {
     async success(res) {
       if (res.confirm) {
         await Taro.request({
-          url: `http://127.0.0.1:3000/api/travelogue/${id}`,
+          url: `https://travle.hub.feashow.cn/api/travelogue/${id}`,
           method: 'DELETE',
           header: {
             Authorization: `Bearer ${userStore.token}`

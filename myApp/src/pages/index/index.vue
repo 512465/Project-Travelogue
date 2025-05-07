@@ -24,7 +24,7 @@
           <view class="item-content">
             <text class="item-title">{{ item.travelogueTitle }}</text>
             <view class="user-info">
-              <image class="avatar" :src="'http://127.0.0.1:3000' + item.userAvatar || defaultAvatar" />
+              <image class="avatar" :src="'https://travle.hub.feashow.cn' + item.userAvatar || defaultAvatar" />
               <text class="user-name">{{ item.travelogueAuthor }}</text>
             </view>
           </view>
@@ -50,7 +50,7 @@
           <view class="item-content">
             <text class="item-title">{{ item.travelogueTitle }}</text>
             <view class="user-info">
-              <image class="avatar" :src="'http://127.0.0.1:3000' + item.userAvatar || defaultAvatar" />
+              <image class="avatar" :src="'https://travle.hub.feashow.cn' + item.userAvatar || defaultAvatar" />
               <text class="user-name">{{ item.travelogueAuthor }}</text>
             </view>
           </view>
