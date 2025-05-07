@@ -34,7 +34,7 @@ const userStore = useUserStore()
 const getTravelogs = async () => {
   try {
     const res = await Taro.request({
-      url: 'http://127.0.0.1:3000/api/travelogue/userCollects',
+      url: 'https://travle.hub.feashow.cn/api/travelogue/userCollects',
       method: 'GET',
       header: {
         Authorization: `Bearer ${userStore.token}`
