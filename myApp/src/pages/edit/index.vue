@@ -29,7 +29,7 @@
       </view>
       <view class="input-wrapper">
         <textarea class="textarea" focus="true" v-model="content" height="200" :maxLength="250" placeholder="请输入内容"
-          @input="handleContentInput" />
+                  @input="handleContentInput" />
         <text class="counter">{{ remainingContentCount }}/200</text>
       </view>
 
@@ -49,10 +49,10 @@
 
 <script setup>
 import './index.scss'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore } from '../../stores/modules/user'
-import { publishTravelogue } from '../../api/travelogue'
+import { publishTravelogue, getTravelogueIdDetail, editTravelogue } from '../../api/travelogue'
 
 // 存储已上传文件（图片或视频）
 const files = ref([])
@@ -66,6 +66,8 @@ const travelogueCover = ref('')
 const remainingTitleCount = computed(() => 20 - title.value.length)
 // 内容计算
 const remainingContentCount = computed(() => 200 - content.value.length)
+//获取参数
+const id = ref(Taro.getCurrentInstance().router?.params?.id || '')
 
 
 // 是否还可以继续添加文件
@@ -212,7 +214,7 @@ const onPublish = async () => {
   }
 
   Taro.showLoading({ title: '发布中...' })
-  await publishTravelogue({
+  await editTravelogue(id.value, {
     travelogueTitle: title.value,
     travelogueContent: content.value,
     travelogueCover: files.value[0].url,
@@ -231,4 +233,14 @@ const onPublish = async () => {
     Taro.showToast({ title: '发布失败', icon: 'none' })
   })
 }
+
+onMounted(async () => {
+  console.log('onMounted', id.value)
+  const res = await getTravelogueIdDetail(id.value)
+  if (res.code === 200) {
+    title.value = res.data.travelogueTitle
+    content.value = res.data.travelogueContent
+    files.value = res.data.travelogueImages
+  }
+})
 </script>
