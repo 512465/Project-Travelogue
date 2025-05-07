@@ -2,13 +2,13 @@
   <view class="container">
     <view>
       <AtSearchBar @clear="onClear" v-model:value="searchQuery" placeholder="搜索游记标题或作者昵称"
-                   @action-click="debouncedSearch" />
+        @action-click="debouncedSearch" />
     </view>
     <view class="waterfall-container">
       <!-- 左列 -->
       <view class="waterfall-column-left" id="leftColumn">
         <view v-for="(item, index) in leftItems" :key="item.travelogueId" class="waterfall-item"
-              @tap="gotoDetail(item.travelogueId)">
+          @tap="gotoDetail(item.travelogueId)">
           <view v-if="item.isImage" class="item-image-wrapper" :style="{
             paddingBottom: (item.travelogueCoverHeight && item.travelogueCoverWidth)
               ? (item.travelogueCoverHeight / item.travelogueCoverWidth * 100) + '%'
@@ -34,7 +34,7 @@
       <!-- 右列 -->
       <view class="waterfall-column-right" id="rightColumn">
         <view v-for="(item, index) in rightItems" :key="item.travelogueId" class="waterfall-item"
-              @tap="gotoDetail(item.travelogueId)">
+          @tap="gotoDetail(item.travelogueId)">
           <view v-if="item.isImage" class="item-image-wrapper" :style="{
             paddingBottom: (item.travelogueCoverHeight && item.travelogueCoverWidth)
               ? (item.travelogueCoverHeight / item.travelogueCoverWidth * 100) + '%'
@@ -211,7 +211,20 @@ const performSearch = async () => {
   if (searchQuery.value) {
     loading.value = true
     const res = await searchTravelogs(searchQuery.value)
-    travelCards.value = res.data.items || []
+    const items = res.data.items || []
+
+    // 缓存图片尺寸
+    await cacheImageSizes(items);
+    console.log('items', items)
+    travelCards.value = items || []
+
+    if (items.length < 10) hasMore.value = false
+    else page++
+
+    await distributeItemsToColumns(items)
+
+    loading.value = false
+
     leftItems.value = []
     rightItems.value = []
     await distributeItemsToColumns(travelCards.value)
