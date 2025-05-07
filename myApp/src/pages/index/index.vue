@@ -2,13 +2,13 @@
   <view class="container">
     <view>
       <AtSearchBar @clear="onClear" v-model:value="searchQuery" placeholder="搜索游记标题或作者昵称"
-        @action-click="debouncedSearch" />
+                   @action-click="debouncedSearch" />
     </view>
     <view class="waterfall-container">
       <!-- 左列 -->
       <view class="waterfall-column-left" id="leftColumn">
         <view v-for="(item, index) in leftItems" :key="item.travelogueId" class="waterfall-item"
-          @tap="gotoDetail(item.travelogueId)">
+              @tap="gotoDetail(item.travelogueId)">
           <view v-if="item.isImage" class="item-image-wrapper" :style="{
             paddingBottom: (item.travelogueCoverHeight && item.travelogueCoverWidth)
               ? (item.travelogueCoverHeight / item.travelogueCoverWidth * 100) + '%'
@@ -24,8 +24,14 @@
           <view class="item-content">
             <text class="item-title">{{ item.travelogueTitle }}</text>
             <view class="user-info">
-              <image class="avatar" :src="'https://travle.hub.feashow.cn' + item.userAvatar || defaultAvatar" />
-              <text class="user-name">{{ item.travelogueAuthor }}</text>
+              <view class="avatar-wrapper">
+                <image class="avatar" :src="'https://travle.hub.feashow.cn' + item.userAvatar || defaultAvatar" />
+                <text class="user-name">{{ item.travelogueAuthor }}</text>
+              </view>
+              <view class="views-count">
+                <AtIcon value='eye' size='12'></AtIcon>
+                <view>{{ item.travelogueViews }}</view>
+              </view>
             </view>
           </view>
         </view>
@@ -34,7 +40,7 @@
       <!-- 右列 -->
       <view class="waterfall-column-right" id="rightColumn">
         <view v-for="(item, index) in rightItems" :key="item.travelogueId" class="waterfall-item"
-          @tap="gotoDetail(item.travelogueId)">
+              @tap="gotoDetail(item.travelogueId)">
           <view v-if="item.isImage" class="item-image-wrapper" :style="{
             paddingBottom: (item.travelogueCoverHeight && item.travelogueCoverWidth)
               ? (item.travelogueCoverHeight / item.travelogueCoverWidth * 100) + '%'
@@ -50,8 +56,14 @@
           <view class="item-content">
             <text class="item-title">{{ item.travelogueTitle }}</text>
             <view class="user-info">
-              <image class="avatar" :src="'https://travle.hub.feashow.cn' + item.userAvatar || defaultAvatar" />
-              <text class="user-name">{{ item.travelogueAuthor }}</text>
+              <view class="avatar-wrapper">
+                <image class="avatar" :src="'https://travle.hub.feashow.cn' + item.userAvatar || defaultAvatar" />
+                <text class="user-name">{{ item.travelogueAuthor }}</text>
+              </view>
+              <view class="views-count">
+                <AtIcon value='eye' size='12'></AtIcon>
+                <view>{{ item.travelogueViews }}</view>
+              </view>
             </view>
           </view>
         </view>
@@ -65,7 +77,7 @@
 <script setup>
 import './index.scss'
 import { ref, onMounted, nextTick } from 'vue'
-import { AtSearchBar } from 'taro-ui-vue3'
+import { AtSearchBar, AtIcon } from 'taro-ui-vue3'
 import Taro, { usePullDownRefresh, useReachBottom } from '@tarojs/taro'
 import { getTravelogs, searchTravelogs } from '../../api/travelogue.js'
 import loadingImg from '../../assets/loading.gif'

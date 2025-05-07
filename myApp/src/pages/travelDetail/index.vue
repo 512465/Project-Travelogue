@@ -57,16 +57,19 @@
     <view class="footer-info-fixed">
       <view class="interaction-bar">
         <view class="interaction-item">
-          <at-icon value="heart" size="20" color="#666" />
-          <text>{{ detail?.likeCount || 0 }}</text>
+          <Button openType="share" class="share-btn">
+            <at-icon openType="share" value="external-link" size="20" color="#666" />
+          </Button>
         </view>
-        <view class="interaction-item">
-          <at-icon value="star" size="20" color="#666" />
-          <text>{{ detail?.favoriteCount || 0 }}</text>
+        <view class="interaction-item" @tap="handleLike">
+          <at-icon v-if="!isLike" value="heart" size="20" color="#666" />
+          <at-icon v-else value="heart-2" size="20" color="red" />
+          <text>{{ detail?.travelogueLikes || 0 }}</text>
         </view>
-        <view class="interaction-item">
-          <at-icon value="message" size="20" color="#666" />
-          <text>{{ detail?.commentCount || 0 }}</text>
+        <view class="interaction-item" @tap="handleCollect">
+          <at-icon v-if="!isCollects" value="star" size="20" color="#666" />
+          <at-icon v-else value="star-2" size="20" color="red" />
+          <text>{{ detail?.travelogueCollects || 0 }}</text>
         </view>
       </view>
     </view>
@@ -77,7 +80,7 @@
 <script setup>
 import './index.scss'
 import { ref, onMounted } from 'vue'
-import Taro from '@tarojs/taro'
+import Taro, { useShareAppMessage, useShareTimeline } from '@tarojs/taro'
 import { useUserStore } from '../../stores/modules/user'
 import {
   AtLoading,
@@ -86,8 +89,8 @@ import {
   AtTag,
   AtFab
 } from 'taro-ui-vue3'
-// const id = ref(Taro.getCurrentInstance().router?.params?.id || '')
-// console.log(id.value)
+import { getTravelogueDetail, isCollectSever, isLikeSever } from '../../api/travelogue'
+import { getUserInfo } from '../../api/user'
 
 const userStore = useUserStore()
 // 响应式状态
@@ -100,6 +103,8 @@ const interval = 5000
 const imgs = ref([])
 const severUrl = 'https://travle.hub.feashow.cn'
 const imgUrls = ref([])
+const isLike = ref(false)
+const isCollects = ref(false)
 const id = ref(Taro.getCurrentInstance().router?.params?.id || '')
 
 const formatDate = timestamp =>
@@ -114,23 +119,17 @@ const retry = async () => {
 
 const fetchData = async () => {
   try {
-    const res = await Taro.request({
-      url: `https://travle.hub.feashow.cn/api/travelogue/${id.value}`,
-      method: 'GET',
-      header: {
-        Authorization: `Bearer ${userStore.token}`
-      }
-    })
-    detail.value = res.data.data
+    const res = await getTravelogueDetail(id.value);
+    detail.value = res.data
     imgs.value = detail.value.travelogueImages.map((item) => {
       return {
         url: item.url,
         type: item.type
       }
     })
-    console.log(imgs.value)
-    Taro.setNavigationBarTitle({ title: res.data.data.travelogueTitle })
+    Taro.setNavigationBarTitle({ title: res.data.travelogueTitle })
   } catch (err) {
+    console.error(err)
     error.value = '数据加载失败'
   } finally {
     loading.value = false
@@ -164,13 +163,47 @@ const viewImage = (url) => {
     urls: imgs.value.map(item => item.url)  // 所有图片的链接
   })
 }
+
+const handleLike = () => {
+  isLike.value = !isLike.value
+  if (isLike.value) {
+    detail.value.travelogueLikes += 1
+  } else {
+    detail.value.travelogueLikes -= 1
+  }
+  isLikeSever(id.value)
+}
+
+const handleCollect = () => {
+  isCollects.value = !isCollects.value
+  if (isCollects.value) {
+    detail.value.travelogueCollects += 1
+  } else {
+    detail.value.travelogueCollects -= 1
+  }
+  isCollectSever(id.value)
+}
+
+useShareAppMessage(() => {
+  return {
+    title: detail.value?.travelogueTitle || '精彩游记',
+    path: `/pages/travel-detail/index?id=${id.value}`,
+    imageUrl: imgs.value[0]?.url || ''  // 分享缩略图
+  }
+})
+
 // 生命周期
-onMounted(() => {
+onMounted(async () => {
   if (!id.value) {
     error.value = '无效的ID参数'
     loading.value = false
     return
   }
+  const res = await getUserInfo(userStore.userInfo.userId)
+  if (res.data.userLikes.includes(Number(id.value))) isLike.value = true
+  else isLike.value = false
+  if (res.data.userCollects.includes(Number(id.value))) isCollects.value = true
+  else isCollects.value = false
   fetchData()
 })
 </script>
