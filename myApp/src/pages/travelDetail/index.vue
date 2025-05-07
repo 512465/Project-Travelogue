@@ -90,8 +90,7 @@ import {
   AtFab
 } from 'taro-ui-vue3'
 import { getTravelogueDetail, isCollectSever, isLikeSever } from '../../api/travelogue'
-// const id = ref(Taro.getCurrentInstance().router?.params?.id || '')
-// console.log(id.value)
+import { getUserInfo } from '../../api/user'
 
 const userStore = useUserStore()
 // 响应式状态
@@ -194,12 +193,17 @@ useShareAppMessage(() => {
 })
 
 // 生命周期
-onMounted(() => {
+onMounted(async () => {
   if (!id.value) {
     error.value = '无效的ID参数'
     loading.value = false
     return
   }
+  const res = await getUserInfo(userStore.userInfo.userId)
+  if (res.data.userLikes.includes(Number(id.value))) isLike.value = true
+  else isLike.value = false
+  if (res.data.userCollects.includes(Number(id.value))) isCollects.value = true
+  else isCollects.value = false
   fetchData()
 })
 </script>
