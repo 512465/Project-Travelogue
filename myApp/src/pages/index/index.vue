@@ -30,7 +30,7 @@
               </view>
               <view class="views-count">
                 <AtIcon value='eye' size='12'></AtIcon>
-                <view>12</view>
+                <view>{{ item.travelogueViews }}</view>
               </view>
             </view>
           </view>
@@ -62,7 +62,7 @@
               </view>
               <view class="views-count">
                 <AtIcon value='eye' size='12'></AtIcon>
-                <view>12</view>
+                <view>{{ item.travelogueViews }}</view>
               </view>
             </view>
           </view>

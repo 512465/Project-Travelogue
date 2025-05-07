@@ -89,6 +89,7 @@ import {
   AtTag,
   AtFab
 } from 'taro-ui-vue3'
+import { getTravelogueDetail } from '../../api/travelogue'
 // const id = ref(Taro.getCurrentInstance().router?.params?.id || '')
 // console.log(id.value)
 
@@ -119,23 +120,17 @@ const retry = async () => {
 
 const fetchData = async () => {
   try {
-    const res = await Taro.request({
-      url: `https://travle.hub.feashow.cn/api/travelogue/${id.value}`,
-      method: 'GET',
-      header: {
-        Authorization: `Bearer ${userStore.token}`
-      }
-    })
-    detail.value = res.data.data
+    const res = await getTravelogueDetail(id.value);
+    detail.value = res.data
     imgs.value = detail.value.travelogueImages.map((item) => {
       return {
         url: item.url,
         type: item.type
       }
     })
-    console.log(imgs.value)
-    Taro.setNavigationBarTitle({ title: res.data.data.travelogueTitle })
+    Taro.setNavigationBarTitle({ title: res.data.travelogueTitle })
   } catch (err) {
+    console.error(err)
     error.value = '数据加载失败'
   } finally {
     loading.value = false
