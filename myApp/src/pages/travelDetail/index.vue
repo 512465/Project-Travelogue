@@ -98,7 +98,7 @@ const current = ref(0)
 const duration = 500
 const interval = 5000
 const imgs = ref([])
-const severUrl = 'http://localhost:3000'
+const severUrl = 'https://travle.hub.feashow.cn'
 const imgUrls = ref([])
 const id = ref(Taro.getCurrentInstance().router?.params?.id || '')
 
@@ -115,7 +115,7 @@ const retry = async () => {
 const fetchData = async () => {
   try {
     const res = await Taro.request({
-      url: `http://127.0.0.1:3000/api/travelogue/${id.value}`,
+      url: `https://travle.hub.feashow.cn/api/travelogue/${id.value}`,
       method: 'GET',
       header: {
         Authorization: `Bearer ${userStore.token}`
