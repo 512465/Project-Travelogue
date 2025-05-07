@@ -1,5 +1,5 @@
 <template>
-  <view class="container">
+  <view class="container" v-if="travelListItems.length">
     <!-- 新增按钮 -->
     <view class="add-btn" @tap="handleAdd">
       <text class="icon-add">+</text>
@@ -9,7 +9,7 @@
     <view class="travel-list">
       <view v-for="item in travelListItems" :key="item.travelogueId" class="travel-item">
         <image v-if="item.type" class="cover" :src="item.travelogueCover" mode="aspectFill" />
-        <video class="cover" :src="item.travelogueCover" />
+        <video v-else class="cover" :src="item.travelogueCover" />
         <view class="content">
           <view class="title">{{ item.travelogueTitle }}</view>
           <view class="desc">{{ truncateContent(item.travelogueContent) }}</view>
@@ -31,10 +31,19 @@
       </view>
     </view>
   </view>
+  <view v-else class="empty">
+    <view class="empty-content">
+      <image class="empty-icon" src="../../assets/2020031921552395638.jpg" mode="aspectFit" />
+      <view class="empty-text">
+        <view class="empty-title">还没有游记哦～</view>
+        <view class="empty-subtitle">去记录你的旅行故事吧</view>
+      </view>
+    </view>
+  </view>
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
 import { useUserStore } from '../../stores/modules/user'
 
@@ -234,6 +243,43 @@ const handleDelete = (id) => {
         border-color: #ffa39e;
       }
     }
+  }
+}
+
+.empty {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+
+  &-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translateY(-30%);
+  }
+
+  &-icon {
+    width: 600px;
+    height: 600px;
+    margin-bottom: 40px;
+    opacity: 0.8;
+  }
+
+  &-text {
+    text-align: center;
+  }
+
+  &-title {
+    font-size: 34px;
+    color: #666;
+    margin-bottom: 16px;
+  }
+
+  &-subtitle {
+    font-size: 28px;
+    color: #999;
   }
 }
 </style>
