@@ -143,6 +143,78 @@ export class TravelogueService {
     }
   }
 
+  async like(id: number, userId: number) {
+    const travelogue = await this.travelogueRepository.findOne({
+      where: { travelogueId: id },
+    });
+    if (!travelogue) {
+      throw new NotFoundException('游记不存在');
+    }
+    const user = await this.userRepository.findOne({ where: { userId } });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+    // console.log(user);
+    user.userLikes = user.userLikes || [];
+    // 检查用户是否已经点赞过
+    if (user.userLikes.includes(id)) {
+      const res = user.userLikes.filter((item) => item !== id); // 过滤掉已经点赞的游记ID
+      user.userLikes = res; // 更新用户的点赞列表
+      travelogue.travelogueLikes -= 1; // 减少点赞数
+      await this.userRepository.save(user); // 保存更新后的用户
+      await this.travelogueRepository.save(travelogue); // 保存更新后的游记
+      return travelogue;
+    } else {
+      user.userLikes.push(id);
+      await this.userRepository.save(user); // 保存更新后的用户
+      console.log(user);
+      travelogue.travelogueLikes += 1; // 增加点赞数
+      await this.travelogueRepository.save(travelogue); // 保存更新后的游记
+      return travelogue;
+    }
+  }
+
+  async userCollects(id: number, userId: number) {
+    const travelogue = await this.travelogueRepository.findOne({
+      where: { travelogueId: id },
+    });
+    if (!travelogue) {
+      throw new NotFoundException('游记不存在');
+    }
+    const user = await this.userRepository.findOne({ where: { userId } });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+    user.userCollects = user.userCollects || [];
+    // 检查用户是否已经收藏过
+    if (user.userCollects.includes(id)) {
+      const res = user.userCollects.filter((item) => item !== id); // 过滤掉已经收藏的游记ID
+      user.userCollects = res; // 更新用户的收藏列表
+      travelogue.travelogueCollects -= 1; // 减少收藏数
+      await this.userRepository.save(user); // 保存更新后的用户
+      await this.travelogueRepository.save(travelogue); // 保存更新后的游记
+      return travelogue;
+    } else {
+      user.userCollects.push(id);
+      await this.userRepository.save(user); // 保存更新后的用户
+      travelogue.travelogueCollects += 1; // 增加收藏数
+      await this.travelogueRepository.save(travelogue); // 保存更新后的游记
+      return travelogue;
+    }
+  }
+
+  async travelogueViews(id: number) {
+    const travelogue = await this.travelogueRepository.findOne({
+      where: { travelogueId: id },
+    });
+    if (!travelogue) {
+      throw new NotFoundException('游记不存在');
+    }
+    travelogue.travelogueViews += 1; // 增加浏览数
+    await this.travelogueRepository.save(travelogue); // 保存更新后的游记
+    return travelogue;
+  }
+
   async findOne(id: number) {
     const travelogue = await this.travelogueRepository.findOne({
       where: { travelogueId: id },
@@ -151,6 +223,42 @@ export class TravelogueService {
       throw new NotFoundException('游记不存在');
     }
     return travelogue;
+  }
+
+  async userLikes(userId: number) {
+    const user = await this.userRepository.findOne({ where: { userId } });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+    const userLikes = user.userLikes || []; // 获取用户的点赞列表
+    const items = [];
+    for (const travelogueId of userLikes) {
+      const travelogue = await this.travelogueRepository.findOne({
+        where: { travelogueId },
+      });
+      if (travelogue) {
+        items.push(travelogue); // 将游记对象添加到结果数组中
+      }
+    }
+    return items;
+  }
+
+  async userCollectsList(userId: number) {
+    const user = await this.userRepository.findOne({ where: { userId } });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+    const userCollects = user.userCollects || []; // 获取用户的收藏列表
+    const items = [];
+    for (const travelogueId of userCollects) {
+      const travelogue = await this.travelogueRepository.findOne({
+        where: { travelogueId },
+      });
+      if (travelogue) {
+        items.push(travelogue); // 将游记对象添加到结果数组中
+      }
+    }
+    return items;
   }
 
   async update(

@@ -14,14 +14,25 @@
 
     <!-- 主体内容 -->
     <view class="main-content">
-      <button class="menu-btn" @tap="handleMyTravelNotes">
-        <text class="iconfont icon-note"></text>
-        我的游记
-      </button>
-      <button class="menu-btn logout-btn" @tap="handleLogout">
-        <text class="iconfont icon-exit"></text>
-        退出登录
-      </button>
+      <!-- 功能卡片网格布局 -->
+      <view class="menu-grid">
+        <view class="menu-card" @tap="handleMyTravelNotes">
+          <text class="iconfont icon-note card-icon"></text>
+          <text class="card-text">我的游记</text>
+        </view>
+        <view class="menu-card" @tap="handleMyFavorites">
+          <text class="iconfont icon-favorite card-icon"></text>
+          <text class="card-text">我的收藏</text>
+        </view>
+      </view>
+
+      <!-- 单独提出的退出按钮 -->
+      <view class="logout-wrapper">
+        <button class="logout-btn" @tap="handleLogout">
+          <text class="iconfont icon-exit"></text>
+          退出登录
+        </button>
+      </view>
     </view>
 
     <!-- 底部信息 -->
@@ -33,9 +44,9 @@
 
 <script setup>
 import './index.scss'
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import Taro from '@tarojs/taro'
-import { Button, Image } from '@tarojs/components'
+import { Button } from '@tarojs/components'
 import { useUserStore } from '../../stores/index.js'
 
 const userStore = useUserStore()
@@ -50,7 +61,7 @@ console.log(avatar.value)
 
 const handleClick = () => {
   console.log('handleClick')
-  Taro.navigateTo({
+  Taro.reLaunch({
     url: '/pages/login/index'
   })
 }
@@ -60,6 +71,14 @@ const handleMyTravelNotes = () => {
   console.log('我的游记')
   Taro.navigateTo({
     url: '/pages/travel-notes/index'
+  })
+}
+
+// 处理我的收藏
+const handleMyFavorites = () => {
+  console.log('我的收藏')
+  Taro.navigateTo({
+    url: '/pages/favorites/index'
   })
 }
 
@@ -222,41 +241,67 @@ const uploadFile = async (file) => {
 }
 
 .main-content {
-  flex: 1;
   padding: 40rpx;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
 
-  .menu-btn {
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30rpx;
+  margin-bottom: 60rpx;
+}
+
+.menu-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  transition: all 0.3s;
+
+  &:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+
+  .card-icon {
+    font-size: 60rpx;
+    color: #4a90e2;
+    margin-bottom: 20rpx;
+  }
+
+  .card-text {
+    font-size: 32rpx;
+    color: #333;
+  }
+}
+
+.logout-wrapper {
+  margin-top: auto;
+  padding: 40rpx 0;
+
+  .logout-btn {
     width: 100%;
     height: 100rpx;
     line-height: 100rpx;
-    margin: 30rpx 0;
-    background-color: #fff;
+    background: #fff;
     border-radius: 16rpx;
+    color: #ff4d4f;
     font-size: 32rpx;
-    color: #333;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s;
 
     &::after {
       border: none;
-    }
-
-    &:active {
-      opacity: 0.8;
-      transform: scale(0.98);
     }
 
     .iconfont {
       margin-right: 20rpx;
       font-size: 40rpx;
     }
-  }
-
-  .logout-btn {
-    color: #ff4d4f;
-    margin-top: 80rpx;
   }
 }
 

@@ -10,7 +10,7 @@
       <view v-for="item in travelListItems" :key="item.travelogueId" class="travel-item">
         <image v-if="item.type" class="cover" :src="item.travelogueCover" mode="aspectFill" />
         <video v-else class="cover" :src="item.travelogueCover" />
-        <view class="content">
+        <view class="content" v-if="item.travelogueStatus != -1">
           <view class="title">{{ item.travelogueTitle }}</view>
           <view class="desc">{{ truncateContent(item.travelogueContent) }}</view>
 
@@ -24,6 +24,24 @@
             </view>
             <view class="actions">
               <view class="btn edit-btn" @tap="handleEdit(item.travelogueId)">编辑</view>
+              <view class="btn delete-btn" @tap="handleDelete(item.travelogueId)">删除</view>
+            </view>
+          </view>
+        </view>
+        <view class="content" v-else>
+          <view class="title">{{ item.travelogueTitle }}</view>
+          <view class="desc">{{ truncateContent(item.travelogueRejectReason) }}</view>
+
+          <view class="footer">
+            <view class="status" :class="{
+              'status-pass': item.travelogueStatus === 1,
+              'status-pending': item.travelogueStatus === 0,
+              'status-reject': item.travelogueStatus === -1
+            }">
+              {{ getStatusText(item.travelogueStatus) }}
+            </view>
+            <view class="actions">
+              <!-- <view class="btn edit-btn" @tap="handleEdit(item.travelogueId)">编辑</view> -->
               <view class="btn delete-btn" @tap="handleDelete(item.travelogueId)">删除</view>
             </view>
           </view>

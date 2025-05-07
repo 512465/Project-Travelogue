@@ -44,6 +44,13 @@ export class TravelogueController {
     });
   }
 
+  @Get('userCollects')
+  @UseGuards(AuthUserGuard)
+  userCollectsList(@Request() req) {
+    console.log(req.user.sub);
+    return this.travelogueService.userCollectsList(req.user.sub);
+  }
+
   @Get('list')
   findAllList(
     @Query('page') page?: number,
@@ -57,6 +64,12 @@ export class TravelogueController {
       travelogueStatus,
       keyword,
     });
+  }
+
+  @Get('userLikes')
+  @UseGuards(AuthUserGuard)
+  userLikes(@Request() req) {
+    return this.travelogueService.userLikes(req.user.sub);
   }
 
   @Get(':id')
@@ -77,6 +90,24 @@ export class TravelogueController {
       updateTravelogueDto,
       req.user.sub,
     );
+  }
+
+  @Patch('like/:id')
+  @UseGuards(AuthUserGuard)
+  like(@Param('id') id: string, @Request() req) {
+    return this.travelogueService.like(+id, req.user.sub);
+  }
+
+  @Patch('travelogueViews/:id')
+  // @UseGuards(AuthUserGuard)
+  travelogueViews(@Param('id') id: string) {
+    return this.travelogueService.travelogueViews(+id);
+  }
+
+  @Patch('userCollects/:id')
+  @UseGuards(AuthUserGuard)
+  userCollects(@Param('id') id: string, @Request() req) {
+    return this.travelogueService.userCollects(+id, req.user.sub);
   }
 
   @Delete(':id')
