@@ -44,6 +44,13 @@ export class TravelogueController {
     });
   }
 
+  @Get('userCollects')
+  @UseGuards(AuthUserGuard)
+  userCollectsList(@Request() req) {
+    console.log(req.user.sub);
+    return this.travelogueService.userCollectsList(req.user.sub);
+  }
+
   @Get('list')
   findAllList(
     @Query('page') page?: number,
@@ -57,6 +64,13 @@ export class TravelogueController {
       travelogueStatus,
       keyword,
     });
+  }
+
+  @Get('userLikes')
+  @UseGuards(AuthUserGuard)
+  userLikes(@Request() req) {
+    console.log(req.user.sub);
+    return this.travelogueService.userLikes(req.user.sub);
   }
 
   @Get(':id')
