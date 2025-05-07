@@ -2,19 +2,19 @@
   <view class="container">
     <view>
       <AtSearchBar @clear="onClear" v-model:value="searchQuery" placeholder="搜索游记标题或作者昵称"
-        @action-click="debouncedSearch" />
+                   @action-click="debouncedSearch" />
     </view>
     <view class="waterfall-container">
       <!-- 左列 -->
       <view class="waterfall-column-left" id="leftColumn">
         <view v-for="(item, index) in leftItems" :key="item.travelogueId" class="waterfall-item"
-          @tap="gotoDetail(item.travelogueId)">
+              @tap="gotoDetail(item.travelogueId)">
           <view v-if="item.isImage" class="item-image-wrapper" :style="{
             paddingBottom: (item.travelogueCoverHeight && item.travelogueCoverWidth)
               ? (item.travelogueCoverHeight / item.travelogueCoverWidth * 100) + '%'
               : '100%'
           }">
-            <image :src="item.travelogueCover" class="item-image" mode="aspectFill" @load="() => onImageLoad(item)" />
+            <image :src="item.travelogueCover" class="item-image" mode="aspectFill" />
           </view>
 
           <view v-else class="video-wrapper">
@@ -34,13 +34,13 @@
       <!-- 右列 -->
       <view class="waterfall-column-right" id="rightColumn">
         <view v-for="(item, index) in rightItems" :key="item.travelogueId" class="waterfall-item"
-          @tap="gotoDetail(item.travelogueId)">
+              @tap="gotoDetail(item.travelogueId)">
           <view v-if="item.isImage" class="item-image-wrapper" :style="{
             paddingBottom: (item.travelogueCoverHeight && item.travelogueCoverWidth)
               ? (item.travelogueCoverHeight / item.travelogueCoverWidth * 100) + '%'
               : '100%'
           }">
-            <image :src="item.travelogueCover" class="item-image" mode="aspectFill" @load="() => onImageLoad(item)" />
+            <image :src="item.travelogueCover" class="item-image" mode="aspectFill" />
           </view>
 
           <view v-else class="video-wrapper">
@@ -75,6 +75,7 @@ const travelCards = ref([])
 const searchQuery = ref('')
 const loading = ref(false)
 const hasMore = ref(true)
+const imageSizeCache = new Map()
 let page = 1
 
 const leftItems = ref([])
@@ -93,6 +94,45 @@ const gotoDetail = (travelogueId) => {
     url: `/pages/travelDetail/index?id=${travelogueId}`
   })
 }
+// 缓存图片尺寸
+const getImageSize = async (url) => {
+  if (!url) return { width: 1, height: 1 }
+
+  if (imageSizeCache.has(url)) {
+    return imageSizeCache.get(url)
+  }
+
+  try {
+    const res = await Taro.getImageInfo({ src: url })
+    const size = { width: res.width, height: res.height }
+    imageSizeCache.set(url, size)
+    return size
+  } catch (e) {
+    console.warn('图片获取失败', url)
+    const fallback = { width: 1, height: 1 }
+    imageSizeCache.set(url, fallback)
+    return fallback
+  }
+}
+
+const cacheImageSizes = async (items) => {
+  const sizePromises = items.map(async (item) => {
+    item.isImage = isImage(item.travelogueCover)
+    if (item.isImage && item.travelogueCover) {
+      // 获取图片尺寸并缓存
+      const size = await getImageSize(item.travelogueCover);
+      item.travelogueCoverWidth = size.width;
+      item.travelogueCoverHeight = size.height;
+    } else {
+      item.travelogueCoverWidth = 1;
+      item.travelogueCoverHeight = 1;
+    }
+  });
+
+  await Promise.all(sizePromises);
+}
+
+
 
 // 获取列高度
 const getColumnHeights = () => {
@@ -112,16 +152,17 @@ const getColumnHeights = () => {
 
 // 插入 item 到较矮列
 const insertItemToColumn = async (item) => {
-  item.isImage = isImage(item.travelogueCover)
-  await nextTick()
-  const { leftHeight, rightHeight } = await getColumnHeights()
-  console.log(leftHeight, rightHeight)
+  // 插入项到较矮的列
+  await nextTick();
+  const { leftHeight, rightHeight } = await getColumnHeights();
+
   if (leftHeight <= rightHeight) {
-    leftItems.value.push(item)
+    leftItems.value.push(item);
   } else {
-    rightItems.value.push(item)
+    rightItems.value.push(item);
   }
 }
+
 
 // 分配多个卡片
 const distributeItemsToColumns = async (items) => {
@@ -145,6 +186,10 @@ const loadTravelCards = async (isRefresh = false) => {
 
   const res = await getTravelogs({ page, limit: 10 })
   const items = res.data.items || []
+  // 缓存图片尺寸
+  await cacheImageSizes(items);
+  console.log('items', items)
+
   if (isRefresh) {
     travelCards.value = items
   } else {
@@ -160,31 +205,6 @@ const loadTravelCards = async (isRefresh = false) => {
   if (isRefresh) Taro.stopPullDownRefresh()
 }
 
-const imageLoadQueue = ref([])
-
-const onImageLoad = async (item) => {
-  if (!imageLoadQueue.value.includes(item.travelogueId)) {
-    imageLoadQueue.value.push(item.travelogueId)
-
-    // 获取原始图片宽高
-    Taro.getImageInfo({
-      src: item.travelogueCover,
-      success(res) {
-        item.travelogueCoverWidth = res.width
-        item.travelogueCoverHeight = res.height
-      },
-      fail() {
-        item.travelogueCoverWidth = 2
-        item.travelogueCoverHeight = 3
-      },
-      complete: async () => {
-        await insertItemToColumn(item)
-      }
-    })
-  }
-}
-
-
 
 // 搜索相关逻辑
 const performSearch = async () => {
@@ -194,7 +214,7 @@ const performSearch = async () => {
     travelCards.value = res.data.items || []
     leftItems.value = []
     rightItems.value = []
-    await distributeItemsToColumns()
+    await distributeItemsToColumns(travelCards.value)
     loading.value = false
   } else {
     loadTravelCards(true)
