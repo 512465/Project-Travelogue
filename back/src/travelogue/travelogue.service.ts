@@ -213,6 +213,42 @@ export class TravelogueService {
     return travelogue;
   }
 
+  async userLikes(userId: number) {
+    const user = await this.userRepository.findOne({ where: { userId } });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+    const userLikes = user.userLikes || []; // 获取用户的点赞列表
+    const items = [];
+    for (const travelogueId of userLikes) {
+      const travelogue = await this.travelogueRepository.findOne({
+        where: { travelogueId },
+      });
+      if (travelogue) {
+        items.push(travelogue); // 将游记对象添加到结果数组中
+      }
+    }
+    return items;
+  }
+
+  async userCollectsList(userId: number) {
+    const user = await this.userRepository.findOne({ where: { userId } });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+    const userCollects = user.userCollects || []; // 获取用户的收藏列表
+    const items = [];
+    for (const travelogueId of userCollects) {
+      const travelogue = await this.travelogueRepository.findOne({
+        where: { travelogueId },
+      });
+      if (travelogue) {
+        items.push(travelogue); // 将游记对象添加到结果数组中
+      }
+    }
+    return items;
+  }
+
   async update(
     id: number,
     updateTravelogueDto: UpdateTravelogueDto,
