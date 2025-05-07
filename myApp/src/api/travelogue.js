@@ -37,3 +37,10 @@ export const getTravelogueIdDetail = (id) => get(`/api/travelogue/${id}`);
 
 // 编辑游记
 export const editTravelogue = (id, data) => patch(`/api/travelogue/${id}`, data);
+
+
+// 是否点赞
+export const isLikeSever = (id) => patch(`/api/travelogue/like/${id}`);
+
+// 是否收藏
+export const isCollectSever = (id) => patch(`/api/travelogue/userCollects/${id}`);

@@ -64,12 +64,12 @@
         <view class="interaction-item" @tap="handleLike">
           <at-icon v-if="!isLike" value="heart" size="20" color="#666" />
           <at-icon v-else value="heart-2" size="20" color="red" />
-          <text>{{ detail?.likeCount || 0 }}</text>
+          <text>{{ detail?.travelogueLikes || 0 }}</text>
         </view>
         <view class="interaction-item" @tap="handleCollect">
-          <at-icon v-if="!isisCollects" value="star" size="20" color="#666" />
+          <at-icon v-if="!isCollects" value="star" size="20" color="#666" />
           <at-icon v-else value="star-2" size="20" color="red" />
-          <text>{{ detail?.favoriteCount || 0 }}</text>
+          <text>{{ detail?.travelogueCollects || 0 }}</text>
         </view>
       </view>
     </view>
@@ -89,7 +89,7 @@ import {
   AtTag,
   AtFab
 } from 'taro-ui-vue3'
-import { getTravelogueDetail } from '../../api/travelogue'
+import { getTravelogueDetail, isCollectSever, isLikeSever } from '../../api/travelogue'
 // const id = ref(Taro.getCurrentInstance().router?.params?.id || '')
 // console.log(id.value)
 
@@ -166,11 +166,23 @@ const viewImage = (url) => {
 }
 
 const handleLike = () => {
-  console.log('点赞')
+  isLike.value = !isLike.value
+  if (isLike.value) {
+    detail.value.travelogueLikes += 1
+  } else {
+    detail.value.travelogueLikes -= 1
+  }
+  isLikeSever(id.value)
 }
 
 const handleCollect = () => {
-  console.log('收藏')
+  isCollects.value = !isCollects.value
+  if (isCollects.value) {
+    detail.value.travelogueCollects += 1
+  } else {
+    detail.value.travelogueCollects -= 1
+  }
+  isCollectSever(id.value)
 }
 
 useShareAppMessage(() => {
