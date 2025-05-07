@@ -8,7 +8,8 @@
     <!-- 游记列表 -->
     <view class="travel-list">
       <view v-for="item in travelListItems" :key="item.travelogueId" class="travel-item">
-        <image class="cover" :src="item.travelogueCover" mode="aspectFill" />
+        <image v-if="item.type" class="cover" :src="item.travelogueCover" mode="aspectFill" />
+        <video class="cover" :src="item.travelogueCover" />
         <view class="content">
           <view class="title">{{ item.travelogueTitle }}</view>
           <view class="desc">{{ truncateContent(item.travelogueContent) }}</view>
@@ -50,10 +51,20 @@ const getTravelogs = async () => {
       }
     })
     console.log(res)
-    travelListItems.value = res.data.data.items
+    travelListItems.value = res.data.data.items.map((item) => {
+      return {
+        ...item,
+        type: isImage(item.travelogueCover)
+      }
+    })
   } catch (error) {
     console.error(error)
   }
+}
+
+// 是否为图片
+const isImage = (url) => {
+  return /\.(jpg|jpeg|png|gif|bmp)$/.test(url)
 }
 
 onMounted(() => {
@@ -76,14 +87,11 @@ const getStatusText = (travelogueStatus) => {
 
 // 新增游记
 const handleAdd = () => {
-  console.log('新增游记')
   Taro.reLaunch({ url: '/pages/publish-itinerary/index' })
 }
 
 // 编辑游记
 const handleEdit = (id) => {
-  console.log('编辑游记')
-  // 看看是不是要新开页面
   Taro.reLaunch({ url: `/pages/edit/index?id=${id}` })
 }
 
@@ -119,7 +127,7 @@ const handleDelete = (id) => {
 .add-btn {
   position: fixed;
   right: 20px;
-  top: 20px;
+  bottom: 100px;
   z-index: 10;
   width: 100px;
   height: 100px;

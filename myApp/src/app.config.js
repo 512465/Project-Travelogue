@@ -6,6 +6,7 @@ export default {
     "pages/travelDetail/index", // 游记详情
     "pages/login/index", // 登录
     "pages/travel-notes/index", // 我的游记
+    "pages/edit/index"// 编辑
   ],
   window: {
     backgroundTextStyle: 'light',
