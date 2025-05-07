@@ -69,7 +69,6 @@ export class TravelogueController {
   @Get('userLikes')
   @UseGuards(AuthUserGuard)
   userLikes(@Request() req) {
-    console.log(req.user.sub);
     return this.travelogueService.userLikes(req.user.sub);
   }
 
