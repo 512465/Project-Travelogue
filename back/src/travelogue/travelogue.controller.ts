@@ -100,7 +100,7 @@ export class TravelogueController {
   }
 
   @Patch('travelogueViews/:id')
-  @UseGuards(AuthUserGuard)
+  // @UseGuards(AuthUserGuard)
   travelogueViews(@Param('id') id: string) {
     return this.travelogueService.travelogueViews(+id);
   }
