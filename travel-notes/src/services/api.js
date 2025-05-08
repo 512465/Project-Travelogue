@@ -66,11 +66,6 @@ export const reviewApi = {
   getReviewDetail: (id) => api.get(`/api/travelogue/${id}`),
   // 更新游记状态（通过/拒绝/删除）
   updateTravelogueStatus: (id, data) => api.patch(`/api/travelogue/admin/${id}`, data),
-  // 以下方法保留用于兼容旧代码
-  // 审核通过
-  approveReview: (id, data) => api.post(`/api/travelogue/${id}/approve`, data),
-  // 审核拒绝
-  rejectReview: (id, data) => api.post(`/api/travelogue/${id}/reject`, data),
 };
 
 // 统计相关API
@@ -87,12 +82,10 @@ export const travelogueApi = {
   getTravelogueList: (params) => api.get('/api/travelogue/list', { params }),
   // 获取游记详情
   getTravelogueDetail: (id) => api.get(`/api/travelogue/${id}`),
-  // 更新游记状态（使用新的API接口）
+  // 更新游记状态（通过/拒绝/删除）
   updateTravelogueStatus: (id, data) => api.patch(`/api/travelogue/admin/${id}`, data),
   // 删除游记（管理员专用）
   deleteTravelogue: (id) => api.delete(`/api/travelogue/admin/${id}`),
-  // 以下方法保留用于兼容旧代码
-  updateTravelogueStatusOld: (id, status) => api.post(`/api/travelogue/${id}/status`, { status }),
 };
 
 export default api;

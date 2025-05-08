@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Table, Button, Input, Select, DatePicker, Space, Tag, Typography, message, Modal } from 'antd';
-const { TextArea } = Input;
-import { SearchOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { Table, Button, Input, Select, DatePicker, Space, Typography, message } from 'antd';
+import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
+import StatusTag from '../../components/StatusTag';
+import ReviewActions from '../../components/ReviewActions';
 import DeleteButton from '../../components/DeleteButton';
 import { useNavigate } from 'react-router-dom';
 import { travelogueApi } from '../../services/api';
@@ -70,72 +71,10 @@ const ReviewList = () => {
     navigate(`/reviews/${id}`);
   };
 
-  // 处理审核通过
-  const handleApprove = async (id) => {
-    try {
-      // 使用新的API方法，只传递travelogueStatus参数
-      await travelogueApi.updateTravelogueStatus(id, { travelogueStatus: 1 });
-      message.success('审核通过成功');
-      // 更新本地数据状态
-      setReviews(
-        reviews.map((review) =>
-          review.id === id ? { ...review, status: 1 } : review
-        )
-      );
-      // 刷新数据
-      fetchTravelogueData();
-    } catch (error) {
-      console.error('审核通过失败:', error);
-      message.error('审核通过失败');
-    }
-  };
-
-  // 处理审核拒绝
-  const handleReject = async (id) => {
-    // 弹出对话框让用户输入拒绝原因
-    Modal.confirm({
-      title: '拒绝审核',
-      content: (
-        <div>
-          <p>请输入拒绝理由：</p>
-          <TextArea 
-            rows={4} 
-            onChange={(e) => {
-              Modal.confirm.rejectReason = e.target.value;
-            }} 
-            placeholder="请输入拒绝理由"
-          />
-        </div>
-      ),
-      onOk: async () => {
-        const rejectReason = Modal.confirm.rejectReason;
-        if (!rejectReason || !rejectReason.trim()) {
-          message.error('请输入拒绝理由');
-          return Promise.reject('请输入拒绝理由');
-        }
-        
-        try {
-          // 使用新的API方法，传递travelogueStatus和travelogueRejectReason参数
-          await travelogueApi.updateTravelogueStatus(id, {
-            travelogueStatus: -1,
-            travelogueRejectReason: rejectReason
-          });
-          message.success('审核拒绝成功');
-          // 更新本地数据状态
-          setReviews(
-            reviews.map((review) =>
-              review.id === id ? { ...review, status: -1 } : review
-            )
-          );
-          // 刷新数据
-          fetchTravelogueData();
-        } catch (error) {
-          console.error('审核拒绝失败:', error);
-          message.error('审核拒绝失败');
-          return Promise.reject(error);
-        }
-      },
-    });
+  // 审核操作成功后的回调函数
+  const handleReviewActionSuccess = () => {
+    // 刷新数据
+    fetchTravelogueData();
   };
 
   // 删除成功后的回调函数
@@ -196,17 +135,7 @@ const ReviewList = () => {
       dataIndex: 'status',
       key: 'status',
       width: 100,
-      render: (status) => {
-        if (status === 0) {
-          return <Tag color="blue">待审核</Tag>;
-        } else if (status === 1) {
-          return <Tag color="green">已通过</Tag>;
-        } else if (status === -1){
-          return <Tag color="red">已拒绝</Tag>;
-        } else {
-          return <Tag color="black">删除</Tag>;
-        }
-      },
+      render: (status) => <StatusTag status={status} />,
     },
     {
       title: '操作',
@@ -222,27 +151,12 @@ const ReviewList = () => {
           >
             查看
           </Button>
-          {record.status === 0 && (
-            <>
-              <Button
-                type="primary"
-                icon={<CheckCircleOutlined />}
-                size="small"
-                onClick={() => handleApprove(record.id)}
-                style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
-              >
-                通过
-              </Button>
-              <Button
-                danger
-                icon={<CloseCircleOutlined />}
-                size="small"
-                onClick={() => handleReject(record.id)}
-              >
-                拒绝
-              </Button>
-            </>
-          )}
+          <ReviewActions 
+            travelogueId={record.id} 
+            currentStatus={record.status} 
+            onSuccess={handleReviewActionSuccess}
+            size="small"
+          />
           {(record.status === 1 || record.status === -1) && (
             <DeleteButton 
               travelogueId={record.id} 

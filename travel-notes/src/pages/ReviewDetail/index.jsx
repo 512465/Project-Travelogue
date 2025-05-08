@@ -1,19 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Descriptions, Button, Space, Typography, Divider, Modal, Input, message, Image } from 'antd';
-import { ArrowLeftOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { Card, Descriptions, Button, Space, Typography, Divider, message } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
+import StatusTag from '../../components/StatusTag';
+import ReviewActions from '../../components/ReviewActions';
+import DeleteButton from '../../components/DeleteButton';
+import ImageGallery from '../../components/ImageGallery';
 import { travelogueApi } from '../../services/api';
 
 const { Title, Paragraph } = Typography;
-const { TextArea } = Input;
 
 const ReviewDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [review, setReview] = useState(null);
-  const [rejectModalVisible, setRejectModalVisible] = useState(false);
-  const [rejectReason, setRejectReason] = useState('');
+
 
   // 获取游记详情数据
   useEffect(() => {
@@ -70,86 +72,41 @@ const ReviewDetail = () => {
     navigate('/reviews');
   };
 
-  // 处理审核通过
-  const handleApprove = async () => {
+  // 审核操作成功后的回调函数
+  const handleReviewActionSuccess = async () => {
+    // 重新获取游记详情
     try {
-      // 使用新的API方法，只传递travelogueStatus参数
-      await travelogueApi.updateTravelogueStatus(review.id, { travelogueStatus: 1 });
-      
-      setReview({
-        ...review,
-        status: 1,
-        reviewHistory: [
-          ...review.reviewHistory,
-          {
-            operator: '管理员',
-            operation: '审核通过',
-            time: new Date().toLocaleString(),
-            remark: '内容符合规范',
-          },
-        ],
-      });
-      message.success('审核已通过');
+      const response = await travelogueApi.getTravelogueDetail(id);
+      if (response && response.data) {
+        const travelogueData = response.data;
+        // 更新状态
+        setReview({
+          ...review,
+          status: travelogueData.travelogueStatus,
+          reviewHistory: [
+            ...review.reviewHistory,
+            {
+              operator: '管理员',
+              operation: travelogueData.travelogueStatus === 1 ? '审核通过' : '审核拒绝',
+              time: new Date().toLocaleString(),
+              remark: travelogueData.travelogueStatus === 1 ? '内容符合规范' : travelogueData.travelogueRejectReason || '内容不符合规范',
+            },
+          ],
+        });
+      }
     } catch (error) {
-      console.error('审核通过失败:', error);
-      message.error('审核通过失败');
+      console.error('获取更新后的游记详情失败:', error);
     }
   };
-
-  // 处理审核拒绝
-  const handleReject = () => {
-    setRejectModalVisible(true);
+  
+  // 删除成功后的回调函数
+  const handleDeleteSuccess = () => {
+    // 返回列表页
+    navigate('/reviews');
+    message.success('游记已删除');
   };
 
-  // 确认拒绝
-  const confirmReject = async () => {
-    if (!rejectReason.trim()) {
-      message.error('请输入拒绝理由');
-      return;
-    }
 
-    try {
-      // 使用新的API方法，传递travelogueStatus和travelogueRejectReason参数
-      await travelogueApi.updateTravelogueStatus(review.id, {
-        travelogueStatus: -1,
-        travelogueRejectReason: rejectReason
-      });
-      
-      setReview({
-        ...review,
-        status: -1,
-        reviewHistory: [
-          ...review.reviewHistory,
-          {
-            operator: '管理员',
-            operation: '审核拒绝',
-            time: new Date().toLocaleString(),
-            remark: rejectReason,
-          },
-        ],
-      });
-
-      setRejectModalVisible(false);
-      setRejectReason('');
-      message.success('审核已拒绝');
-    } catch (error) {
-      console.error('审核拒绝失败:', error);
-      message.error('审核拒绝失败');
-    }
-  };
-
-  // 渲染状态标签
-  const renderStatusTag = (status) => {
-    if (status === 0) {
-      return <span style={{ color: '#1890ff' }}>待审核</span>;
-    } else if (status === 1) {
-      return <span style={{ color: '#52c41a' }}>已通过</span>;
-    } else if (status === -1) {
-      return <span style={{ color: '#f5222d' }}>已拒绝</span>;
-    } else {
-      return <span style={{ color: '#000000' }}>未知状态</span>;
-    }
-  };
 
 
   if (loading) {
@@ -173,7 +130,7 @@ const ReviewDetail = () => {
       <Card title="基本信息" style={{ marginBottom: 16, width: '100%' }}>
         <Descriptions bordered column={2} style={{ width: '100%' }}>
           <Descriptions.Item label="游记ID">{review.id}</Descriptions.Item>
-          <Descriptions.Item label="审核状态">{renderStatusTag(review.status)}</Descriptions.Item>
+          <Descriptions.Item label="审核状态"><StatusTag status={review.status} /></Descriptions.Item>
           <Descriptions.Item label="标题" span={2}>{review.title}</Descriptions.Item>
           <Descriptions.Item label="作者">{review.submitter}</Descriptions.Item>
           <Descriptions.Item label="提交时间">{review.submitTime}</Descriptions.Item>
@@ -187,28 +144,12 @@ const ReviewDetail = () => {
         {review.images && review.images.length > 0 && (
           <div style={{ marginTop: 16 }}>
             <Divider orientation="left">媒体内容</Divider>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
-              {review.images.map((media, index) => (
-                <div key={index} style={{ marginBottom: 16 }}>
-                  {media.type === 'image' ? (
-                    <Image
-                      src={media.url ? media.url.replace(/`/g, '').trim() : ''}
-                      alt={`图片${index + 1}`}
-                      style={{ width: 200, height: 150, objectFit: 'cover' }}
-                    />
-                  ) : media.type === 'video' ? (
-                    <video
-                      src={media.url ? media.url.replace(/`/g, '').trim() : ''}
-                      controls
-                      style={{ width: 200, height: 150, objectFit: 'cover' }}
-                    />
-                  ) : null}
-                  <div style={{ marginTop: 8, textAlign: 'center' }}>
-                    {media.type === 'image' ? '图片' : '视频'} {index + 1}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <ImageGallery 
+              images={review.images.filter(media => media.type === 'image').map(media => media.url)} 
+              width={200}
+              height={150}
+              gap={16}
+            />
           </div>
         )}
       </Card>
@@ -242,43 +183,20 @@ const ReviewDetail = () => {
         </Descriptions>
       </Card>
 
-      {review.status === 0 && (
-        <div style={{ marginTop: 16, textAlign: 'center' }}>
-          <Space size="large">
-            <Button
-              type="primary"
-              icon={<CheckCircleOutlined />}
-              size="large"
-              onClick={handleApprove}
-              style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
-            >
-              通过审核
-            </Button>
-            <Button
-              danger
-              icon={<CloseCircleOutlined />}
-              size="large"
-              onClick={handleReject}
-            >
-              拒绝审核
-            </Button>
-          </Space>
-        </div>
-      )}
-
-      <Modal
-        title="拒绝理由"
-        open={rejectModalVisible}
-        onOk={confirmReject}
-        onCancel={() => setRejectModalVisible(false)}
-      >
-        <TextArea
-          rows={4}
-          value={rejectReason}
-          onChange={(e) => setRejectReason(e.target.value)}
-          placeholder="请输入拒绝理由"
-        />
-      </Modal>
+      <div style={{ marginTop: 16, textAlign: 'center' }}>
+        <Space size="large">
+          <ReviewActions 
+            travelogueId={review.id} 
+            currentStatus={review.status} 
+            onSuccess={handleReviewActionSuccess}
+            size="large"
+          />
+          <DeleteButton 
+            travelogueId={review.id} 
+            onSuccess={handleDeleteSuccess} 
+          />
+        </Space>
+      </div>
     </div>
   );
 };
