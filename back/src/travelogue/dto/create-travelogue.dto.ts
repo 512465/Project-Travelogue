@@ -18,7 +18,4 @@ export class CreateTravelogueDto {
   @IsString({ message: '封面链接必须是字符串' })
   @IsOptional()
   travelogueCover: string;
-
-  @IsNumber()
-  travelogueLikes: number;
 }
