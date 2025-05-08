@@ -14,6 +14,7 @@ import { TravelogueService } from './travelogue.service';
 import { CreateTravelogueDto } from './dto/create-travelogue.dto';
 import { UpdateTravelogueDto } from './dto/update-travelogue.dto';
 import { AuthUserGuard } from 'src/auth-user/authUser.guard';
+import { AuthAdminGuard } from 'src/auth-admin/authAdmin.guard';
 
 @Controller('travelogue')
 export class TravelogueController {
@@ -78,6 +79,20 @@ export class TravelogueController {
     return this.travelogueService.findOne(+id);
   }
 
+  @Patch('admin/:id')
+  @UseGuards(AuthAdminGuard)
+  updateAdmin(
+    @Param('id') id: string,
+    @Body() updateTravelogueDto: UpdateTravelogueDto,
+    @Request() req,
+  ) {
+    return this.travelogueService.updateAdmin(
+      +id,
+      updateTravelogueDto,
+      req.user.sub,
+    );
+  }
+
   @Patch(':id')
   @UseGuards(AuthUserGuard)
   update(
@@ -114,5 +129,11 @@ export class TravelogueController {
   @UseGuards(AuthUserGuard)
   remove(@Param('id') id: string, @Request() req) {
     return this.travelogueService.remove(+id, req.user.sub);
+  }
+
+  @Delete('admin/:id')
+  @UseGuards(AuthAdminGuard)
+  removeAdmin(@Param('id') id: string, @Request() req) {
+    return this.travelogueService.removeAdmin(+id, req.user.sub);
   }
 }

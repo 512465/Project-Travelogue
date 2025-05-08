@@ -9,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TravelogueEntity } from './entities/travelogue.entity';
 import { UserEntity } from 'src/user/entities/user.entity';
+import { AdminEntity } from 'src/admin/entities/admin.entity';
 
 @Injectable()
 export class TravelogueService {
@@ -17,6 +18,8 @@ export class TravelogueService {
     private readonly travelogueRepository: Repository<TravelogueEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(AdminEntity)
+    private readonly adminRepository: Repository<AdminEntity>,
   ) {}
   async create(
     createTravelogueDto: CreateTravelogueDto,
@@ -294,6 +297,34 @@ export class TravelogueService {
     return updatedTravelogue;
   }
 
+  async updateAdmin(
+    id: number,
+    updateTravelogueDto: UpdateTravelogueDto,
+    adminId: number,
+  ) {
+    const travelogue = await this.travelogueRepository.findOne({
+      where: { travelogueId: id },
+    });
+    if (!travelogue) {
+      throw new NotFoundException('游记不存在');
+    }
+
+    const admin = await this.adminRepository.findOne({
+      where: { adminId: adminId },
+    });
+    if (!admin) {
+      throw new NotFoundException('用户不存在');
+    }
+
+    // 更新游记信息
+    const updatedTravelogue = await this.travelogueRepository.save({
+      ...travelogue,
+      ...updateTravelogueDto,
+    });
+
+    return updatedTravelogue;
+  }
+
   async remove(id: number, userId: number) {
     const travelogue = await this.travelogueRepository.findOne({
       where: { travelogueId: id },
@@ -310,6 +341,32 @@ export class TravelogueService {
     // 检查用户是否有权限删除
     if (travelogue.userId !== userId) {
       throw new ForbiddenException('你没有权限删除此游记');
+    }
+    const result = await this.travelogueRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException('删除失败');
+    }
+    return result;
+  }
+
+  async removeAdmin(id: number, adminId: number) {
+    const travelogue = await this.travelogueRepository.findOne({
+      where: { travelogueId: id },
+    });
+    if (!travelogue) {
+      throw new NotFoundException('游记不存在');
+    }
+    const admin = await this.adminRepository.findOne({
+      where: { adminId: adminId },
+    });
+
+    // 检查用户是否有权限删除
+    if (admin.adminAuth !== 1) {
+      throw new ForbiddenException('你没有权限删除此游记');
+    }
+
+    if (!admin) {
+      throw new NotFoundException('用户不存在');
     }
     const result = await this.travelogueRepository.delete(id);
     if (result.affected === 0) {
