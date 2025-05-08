@@ -1,12 +1,12 @@
-import { get,patch,post } from "../utils/request";
+import { get, patch, post } from "../utils/request";
 
 // 获取所有游记
 export const getTravelogs = (data) => {
-  const { page, limit, travelogueStatus, keyword } = data;
+  const { page, limit, travelogueStatus = 1, keyword } = data;
   // 构建基础的 URL
   let url = `/api/travelogue/list?page=${page}&limit=${limit}`;
   // 如果传入了 travelogueStatus，加入 URL 中
-  if (travelogueStatus !== null) {
+  if (travelogueStatus !== null && travelogueStatus !== undefined) {
     url += `&travelogueStatus=${travelogueStatus}`;
   }
   // 如果传入了 keyword，加入 URL 中
