@@ -11,7 +11,7 @@ const { TextArea } = Input;
  */
 const ReviewActions = ({ travelogueId, currentStatus, onSuccess, size = 'middle', showText = true }) => {
   const [rejectModalVisible, setRejectModalVisible] = useState(false);
-  const [rejectReason, setRejectReason] = useState('');
+  const [travelogueRejectReason, setRejectReason] = useState('');
   const [loading, setLoading] = useState(false);
 
   // 处理审核通过
@@ -44,7 +44,7 @@ const ReviewActions = ({ travelogueId, currentStatus, onSuccess, size = 'middle'
 
   // 处理审核拒绝
   const handleRejectConfirm = async () => {
-    if (!rejectReason.trim()) {
+    if (!travelogueRejectReason.trim()) {
       message.warning('请输入拒绝理由');
       return;
     }
@@ -53,7 +53,7 @@ const ReviewActions = ({ travelogueId, currentStatus, onSuccess, size = 'middle'
     try {
       await travelogueApi.updateTravelogueStatus(travelogueId, { 
         travelogueStatus: -1,
-        rejectReason: rejectReason.trim() 
+        travelogueRejectReason: travelogueRejectReason.trim() 
       });
       message.success('审核拒绝成功');
       setRejectModalVisible(false);
@@ -108,7 +108,7 @@ const ReviewActions = ({ travelogueId, currentStatus, onSuccess, size = 'middle'
           <p>请输入拒绝理由：</p>
           <TextArea
             rows={4}
-            value={rejectReason}
+            value={travelogueRejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
             placeholder="请输入拒绝理由"
           />
