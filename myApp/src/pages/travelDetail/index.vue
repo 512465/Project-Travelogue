@@ -200,10 +200,8 @@ onMounted(async () => {
     return
   }
   const res = await getUserInfo(userStore.userInfo.userId)
-  if (res.data.userLikes.includes(Number(id.value))) isLike.value = true
-  else isLike.value = false
-  if (res.data.userCollects.includes(Number(id.value))) isCollects.value = true
-  else isCollects.value = false
+  isLike.value = Array.isArray(res.data.userLikes) ? res.data.userLikes.includes(Number(id.value)) : false;
+  isCollects.value = Array.isArray(res.data.userCollects) ? res.data.userCollects.includes(Number(id.value)) : false;
   fetchData()
 })
 </script>
