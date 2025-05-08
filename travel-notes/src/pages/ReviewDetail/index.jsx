@@ -73,7 +73,8 @@ const ReviewDetail = () => {
   // 处理审核通过
   const handleApprove = async () => {
     try {
-      await travelogueApi.updateTravelogueStatus(review.id, 1);
+      // 使用新的API方法，只传递travelogueStatus参数
+      await travelogueApi.updateTravelogueStatus(review.id, { travelogueStatus: 1 });
       
       setReview({
         ...review,
@@ -108,7 +109,11 @@ const ReviewDetail = () => {
     }
 
     try {
-      await travelogueApi.updateTravelogueStatus(review.id, -1);
+      // 使用新的API方法，传递travelogueStatus和travelogueRejectReason参数
+      await travelogueApi.updateTravelogueStatus(review.id, {
+        travelogueStatus: -1,
+        travelogueRejectReason: rejectReason
+      });
       
       setReview({
         ...review,

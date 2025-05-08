@@ -7,6 +7,8 @@ import zhCN from 'antd/locale/zh_CN'
 import './index.css'
 import router from './router'
 import store from './store'
+// 导入Ant Design的React 19兼容性补丁
+import '@ant-design/v5-patch-for-react-19'
 
 // 修改页面标题
 document.title = '审核管理系统'

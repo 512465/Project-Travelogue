@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Table, Button, Input, Select, DatePicker, Space, Tag, Typography, message } from 'antd';
-import { SearchOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Button, Input, Select, DatePicker, Space, Tag, Typography, message, Modal } from 'antd';
+const { TextArea } = Input;
+import { SearchOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import DeleteButton from '../../components/DeleteButton';
 import { useNavigate } from 'react-router-dom';
 import { travelogueApi } from '../../services/api';
 
@@ -71,7 +73,8 @@ const ReviewList = () => {
   // 处理审核通过
   const handleApprove = async (id) => {
     try {
-      await travelogueApi.updateTravelogueStatus(id, 1);
+      // 使用新的API方法，只传递travelogueStatus参数
+      await travelogueApi.updateTravelogueStatus(id, { travelogueStatus: 1 });
       message.success('审核通过成功');
       // 更新本地数据状态
       setReviews(
@@ -89,34 +92,56 @@ const ReviewList = () => {
 
   // 处理审核拒绝
   const handleReject = async (id) => {
-    try {
-      await travelogueApi.updateTravelogueStatus(id, -1);
-      message.success('审核拒绝成功');
-      // 更新本地数据状态
-      setReviews(
-        reviews.map((review) =>
-          review.id === id ? { ...review, status: -1 } : review
-        )
-      );
-      // 刷新数据
-      fetchTravelogueData();
-    } catch (error) {
-      console.error('审核拒绝失败:', error);
-      message.error('审核拒绝失败');
-    }
+    // 弹出对话框让用户输入拒绝原因
+    Modal.confirm({
+      title: '拒绝审核',
+      content: (
+        <div>
+          <p>请输入拒绝理由：</p>
+          <TextArea 
+            rows={4} 
+            onChange={(e) => {
+              Modal.confirm.rejectReason = e.target.value;
+            }} 
+            placeholder="请输入拒绝理由"
+          />
+        </div>
+      ),
+      onOk: async () => {
+        const rejectReason = Modal.confirm.rejectReason;
+        if (!rejectReason || !rejectReason.trim()) {
+          message.error('请输入拒绝理由');
+          return Promise.reject('请输入拒绝理由');
+        }
+        
+        try {
+          // 使用新的API方法，传递travelogueStatus和travelogueRejectReason参数
+          await travelogueApi.updateTravelogueStatus(id, {
+            travelogueStatus: -1,
+            travelogueRejectReason: rejectReason
+          });
+          message.success('审核拒绝成功');
+          // 更新本地数据状态
+          setReviews(
+            reviews.map((review) =>
+              review.id === id ? { ...review, status: -1 } : review
+            )
+          );
+          // 刷新数据
+          fetchTravelogueData();
+        } catch (error) {
+          console.error('审核拒绝失败:', error);
+          message.error('审核拒绝失败');
+          return Promise.reject(error);
+        }
+      },
+    });
   };
 
-  // 处理删除
-  const handleDelete = async (id) => {
-    try {
-      // 这里可以添加实际的删除API调用
-      // await travelogueApi.deleteTravelogue(id);
-      message.success('删除成功');
-      setReviews(reviews.filter((review) => review.id !== id));
-    } catch (error) {
-      console.error('删除失败:', error);
-      message.error('删除失败');
-    }
+  // 删除成功后的回调函数
+  const handleDeleteSuccess = () => {
+    // 刷新数据
+    fetchTravelogueData();
   };
 
   // 表格列定义
@@ -219,14 +244,10 @@ const ReviewList = () => {
             </>
           )}
           {(record.status === 1 || record.status === -1) && (
-            <Button
-              danger
-              icon={<DeleteOutlined />}
-              size="small"
-              onClick={() => handleDelete(record.id)}
-            >
-              删除
-            </Button>
+            <DeleteButton 
+              travelogueId={record.id} 
+              onSuccess={handleDeleteSuccess} 
+            />
           )}
         </Space>
       ),

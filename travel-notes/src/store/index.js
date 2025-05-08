@@ -11,9 +11,17 @@ const authSlice = createSlice({
   reducers: {
     login: (state, action) => {
       state.isLoggedIn = true;
-      state.user = action.payload.user; // Assuming payload is { user: userData, token: '...' }
-      if (action.payload.token) {
-        localStorage.setItem('token', action.payload.token);
+      // 保存用户信息，包括adminAuth权限信息
+      state.user = {
+        adminId: action.payload.adminId,
+        adminName: action.payload.adminName,
+        adminAuth: action.payload.adminAuth,
+      };
+      if (action.payload.access_token) {
+        // 确保token被正确保存到localStorage
+        localStorage.setItem('token', action.payload.access_token);
+        // 添加调试信息
+        console.log('Token saved to localStorage:', action.payload.access_token);
       }
     },
     logout: (state) => {

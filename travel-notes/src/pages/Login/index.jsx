@@ -27,7 +27,8 @@ const Login = () => {
       if (response && response.success && response.data && response.data.access_token) {
         // 派发 login action
         const { access_token, ...userData } = response.data; // 假设 response.data 包含 access_token 和其他用户信息
-        dispatch(loginAction({ user: userData, token: access_token }));
+        // 修正：直接传递userData和access_token，与store中的reducer结构匹配
+        dispatch(loginAction({ ...userData, access_token }));
         console.log('Login successful, token:', access_token);
         message.success(response.message || '登录成功'); // 使用 API 返回的 message
         navigate('/dashboard'); // 登录成功后跳转到仪表盘
