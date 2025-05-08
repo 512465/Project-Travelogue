@@ -11,9 +11,10 @@
 
     <Form class="form" @submit="handleSubmit">
       <input v-model="formData.userName" class="input" placeholder="请输入用户名" name="userName" />
-      <input v-model="formData.userPassword" class="input" placeholder="请输入密码" password name="userPassword" />
-      <input v-if="!isLogin" v-model="formData.userPasswordConfirm" class="input" placeholder="请确认密码" password
-        name="userPasswordConfirm" />
+      <input v-model="formData.userPassword" type="password" class="input" placeholder="请输入密码" password="true"
+        name="userPassword" />
+      <input v-if="!isLogin" v-model="formData.userPasswordConfirm" type="password" class="input" placeholder="请确认密码"
+        password="true" name="userPasswordConfirm" />
       <button class="submit-btn" form-type="submit" :loading="isSubmitting">
         {{ isLogin ? '登录' : '注册' }}
       </button>
@@ -24,7 +25,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import Taro from '@tarojs/taro'
-import { Form } from '@tarojs/components'
+import { Form, Input } from '@tarojs/components'
 import { register, login, getUserInfo } from '../../api/user'
 import { useUserStore } from '../../stores'
 
@@ -68,24 +69,29 @@ const handleSubmit = async () => {
     console.log(action)
     if (action === 'login') {
       const res = await login({ userName: formData.userName, userPassword: formData.userPassword })
+      console.log(res, 132465465)
       userStore.setToken(res.data.access_token)
       const user = await getUserInfo(res.data.userId)
       userStore.setUserInfo(user.data)
-      Taro.showToast({
-        title: `${isLogin.value ? '登录' : '注册'}成功`,
-        icon: 'success'
-      })
-      setTimeout(() => {
-        Taro.switchTab({ url: '/pages/index/index' })
-        isSubmitting.value = false
-      }, 1000);
+      if (res.success) {
+        Taro.showToast({
+          title: `${isLogin.value ? '登录' : '注册'}成功`,
+          icon: 'success'
+        })
+        setTimeout(() => {
+          Taro.switchTab({ url: '/pages/index/index' })
+          isSubmitting.value = false
+        }, 1000);
+      }
     } else {
       const res = await register({ userName: formData.userName, userPassword: formData.userPassword, userPasswordConfirm: formData.userPasswordConfirm })
-      Taro.showToast({
-        title: `${isLogin.value ? '登录' : '注册'}成功`,
-        icon: 'success'
-      })
-      isLogin.value = true
+      if (res.success) {
+        Taro.showToast({
+          title: `${isLogin.value ? '登录' : '注册'}成功`,
+          icon: 'success'
+        })
+        isLogin.value = true
+      }
     }
   } catch (err) {
     Taro.showToast({

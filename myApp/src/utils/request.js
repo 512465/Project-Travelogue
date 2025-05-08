@@ -1,7 +1,8 @@
 // src/utils/request.js
 import Taro from '@tarojs/taro'
+import { useUserStore } from '../stores/index'
 
-const BASE_URL = 'http://127.0.0.1:3000' // 根据环境变量动态配置更佳
+const BASE_URL = 'http://175.24.138.67:8586' // 根据环境变量动态配置更佳
 
 const request = async (method, url, data = {}, config = {}) => {
   // 合并配置
@@ -14,7 +15,8 @@ const request = async (method, url, data = {}, config = {}) => {
   }
 
   // 请求拦截器（例如：添加 Token）
-  const token = Taro.getStorageSync('token')
+  const userStore = useUserStore()
+  const token = userStore.token
   if (token) {
     mergedConfig.header.Authorization = `Bearer ${token}`
   }
@@ -53,3 +55,4 @@ export const get = (url, params, config) => request('GET', url, params, config)
 export const post = (url, data, config) => request('POST', url, data, config)
 export const put = (url, data, config) => request('PUT', url, data, config)
 export const del = (url, data, config) => request('DELETE', url, data, config)
+export const patch = (url, data, config) => request('PATCH', url, data, config)

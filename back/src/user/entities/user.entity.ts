@@ -33,8 +33,16 @@ export class UserEntity {
   })
   userPassword: string; // 用户密码，非空
 
-  @Column({ default: 'uploads/1.png' })
+  @Column({ default: '/uploads/2020031921552395638.jpg' })
   userAvatar: string; // 用户头像，非空
+
+  // 点赞游记
+  @Column({ type: 'json', nullable: true, name: 'user_likes' })
+  userLikes: number[];
+
+  // 收藏游记
+  @Column({ type: 'json', nullable: true, name: 'user_collects' })
+  userCollects: number[];
 
   // 用户与游记的关系，一个用户可以有多个游记
   @OneToMany(() => TravelogueEntity, (travelogue) => travelogue.user)

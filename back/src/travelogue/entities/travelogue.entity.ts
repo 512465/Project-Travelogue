@@ -91,6 +91,38 @@ export class TravelogueEntity {
   })
   travelogueImages: string[];
 
+  // 拒绝原因
+  @Column({
+    type: 'varchar',
+    nullable: true,
+    name: 'travelogue_reject_reason',
+  })
+  travelogueRejectReason: string;
+
+  // 浏览量
+  @Column({
+    type: 'int',
+    default: 0, // 浏览量
+    name: 'travelogue_views',
+  })
+  travelogueViews: number;
+
+  // 点赞数
+  @Column({
+    type: 'int',
+    default: 0, // 点赞数
+    name: 'travelogue_likes',
+  })
+  travelogueLikes: number;
+
+  // 收藏数
+  @Column({
+    type: 'int',
+    default: 0, // 收藏数
+    name: 'travelogue_collects',
+  })
+  travelogueCollects: number;
+
   // 关联用户实体，一个用户可以有多篇游记
   @ManyToOne(() => UserEntity, (user) => user.travelogues, { nullable: false })
   @JoinColumn({ name: 'travelogue_user_id' }) // 外键列名

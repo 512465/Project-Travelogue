@@ -67,8 +67,29 @@ React 与 TypeScript 的结合成为主流，本文记录了实现 React 应用�
       };
     }
 
+    async function checkImageAvailability(imageUrl) {
+      try {
+        const res = await fetch(imageUrl);
+        if (res.ok) {
+          return true;  // Image is available
+        }
+        return false;  // Image is not available
+      } catch (err) {
+        return false;  // Error occurred, image is not available
+      }
+    }
+
     async function sendTravelogue() {
       const data = generateRandomTravelogue();
+      const imageAvailable = await checkImageAvailability(data.travelogueCover);
+
+      if (!imageAvailable) {
+        const logDiv = document.getElementById('log');
+        logDiv.innerHTML += `<div class="error">❌ 图片不可用，跳过发布：${data.travelogueCover}</div>`;
+        logDiv.scrollTop = logDiv.scrollHeight;
+        return;
+      }
+
       try {
         const res = await fetch('http://localhost:3000/api/travelogue', {
           method: 'POST',

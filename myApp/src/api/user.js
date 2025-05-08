@@ -1,4 +1,4 @@
-import { get, post } from "../utils/request";
+import { get, post, patch } from "../utils/request";
 
 // 注册用户
 export const register = ({ userName, userPassword, userPasswordConfirm }) => post("/api/user", { userName, userPassword, userPasswordConfirm });
@@ -8,3 +8,6 @@ export const login = ({ userName, userPassword }) => post("/api/auth-user/login"
 
 // 获取用户信息
 export const getUserInfo = (id) => get(`/api/user/${id}`);
+
+// 更新用户头像
+export const updateUserAvatar = (avatar) => patch(`/api/user/avatar`, { avatar });

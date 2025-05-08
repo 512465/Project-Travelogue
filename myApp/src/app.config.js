@@ -5,6 +5,9 @@ export default {
     "pages/publish-itinerary/index", // 游记发布
     "pages/travelDetail/index", // 游记详情
     "pages/login/index", // 登录
+    "pages/travel-notes/index", // 我的游记
+    "pages/edit/index",// 编辑
+    "pages/favorites/index" // 收藏
   ],
   window: {
     backgroundTextStyle: 'light',
@@ -30,11 +33,11 @@ export default {
         text: '发布游记',
       },
       {
-        pagePath:'pages/my-itineraries/index',
-        iconPath:'assets/my.png',
-        selectedIconPath:'assets/my_active.png',
-        text:'我的',
-     },
+        pagePath: 'pages/my-itineraries/index',
+        iconPath: 'assets/my.png',
+        selectedIconPath: 'assets/my_active.png',
+        text: '我的',
+      },
     ]
   }
 }

@@ -83,6 +83,22 @@ export class UserService {
     return newData;
   }
 
+  async updateAvatar(id: number, userAvatar: string) {
+    const user = await this.userRepository.findOneBy({ userId: id });
+    if (!user) {
+      throw new BadRequestException('用户不存在');
+    }
+    const newUserData = {
+      ...user,
+      userAvatar: userAvatar,
+    };
+    const newUser = await this.userRepository.save(newUserData);
+    const { userPassword, ...result } = newUser;
+    const newData = result;
+    const newAvatar = newData.userAvatar;
+    return { newData, newAvatar };
+  }
+
   async remove(id: number) {
     const user = await this.userRepository.findOneBy({ userId: id });
     if (!user) {

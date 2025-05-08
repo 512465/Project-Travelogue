@@ -5,5 +5,25 @@
     "compileHotReLoad": true,
     "urlCheck": false
   },
-  "libVersion": "3.8.3"
+  "libVersion": "3.8.3",
+  "condition": {
+    "miniprogram": {
+      "list": [
+        {
+          "name": "pages/favorites/index",
+          "pathName": "pages/favorites/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "pages/my-itineraries/index",
+          "pathName": "pages/my-itineraries/index",
+          "query": "",
+          "launchMode": "default",
+          "scene": null
+        }
+      ]
+    }
+  }
 }

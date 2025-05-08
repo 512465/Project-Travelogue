@@ -10,7 +10,7 @@ export const useUserStore = defineStore(
 
     const setToken = (newToken) => {
       token.value = newToken
-      Taro.setStorageSync('token', newToken)
+      // Taro.setStorageSync('token', newToken)
     }
     const removeToken = () => {
       token.value = ''
@@ -20,7 +20,7 @@ export const useUserStore = defineStore(
 
     const setUserInfo = (newUserInfo) => {
       userInfo.value = newUserInfo
-      Taro.setStorageSync('userInfo', newUserInfo)
+      // Taro.setStorageSync('userInfo', newUserInfo)
     }
 
     return {
@@ -32,15 +32,6 @@ export const useUserStore = defineStore(
     }
   },
   {
-    persist: {
-      // 持久化配置
-      enabled: true,
-      strategies: [
-        {
-          storage: localStorage,
-          paths: ['userInfo', 'token'], // 明确持久化字段
-        },
-      ],
-    },
+    persist: true
   },
 )

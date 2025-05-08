@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsOptional, Length } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  Length,
+  IsNumber,
+} from 'class-validator';
 
 export class CreateTravelogueDto {
   @IsString({ message: 'travelogueTitle必须是字符串' })
@@ -12,4 +18,7 @@ export class CreateTravelogueDto {
   @IsString({ message: '封面链接必须是字符串' })
   @IsOptional()
   travelogueCover: string;
+
+  @IsNumber()
+  travelogueLikes: number;
 }
