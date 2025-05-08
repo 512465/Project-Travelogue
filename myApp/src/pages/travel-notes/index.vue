@@ -100,7 +100,6 @@ onMounted(() => {
 
 // 内容截断
 const truncateContent = (text) => {
-  console.log(text)
   return text.length > 20 ? text.substring(0, 20) + '...' : text
 }
 
