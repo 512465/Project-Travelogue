@@ -57,13 +57,13 @@ export const userApi = {
 // 审核相关API
 export const reviewApi = {
   // 获取审核列表
-  getReviewList: (params) => api.get('/reviews', { params }),
+  getReviewList: (params) => api.get('/api/travelogue/list', { params }),
   // 获取审核详情
-  getReviewDetail: (id) => api.get(`/reviews/${id}`),
+  getReviewDetail: (id) => api.get(`/api/travelogue/${id}`),
   // 审核通过
-  approveReview: (id, data) => api.post(`/reviews/${id}/approve`, data),
+  approveReview: (id, data) => api.post(`/api/travelogue/${id}/approve`, data),
   // 审核拒绝
-  rejectReview: (id, data) => api.post(`/reviews/${id}/reject`, data),
+  rejectReview: (id, data) => api.post(`/api/travelogue/${id}/reject`, data),
 };
 
 // 统计相关API
@@ -72,6 +72,16 @@ export const statsApi = {
   getDashboardStats: () => api.get('/stats/dashboard'),
   // 获取审核统计
   getReviewStats: (params) => api.get('/stats/reviews', { params }),
+};
+
+// 游记相关API
+export const travelogueApi = {
+  // 获取游记列表
+  getTravelogueList: (params) => api.get('/api/travelogue/list', { params }),
+  // 获取游记详情
+  getTravelogueDetail: (id) => api.get(`/api/travelogue/${id}`),
+  // 更新游记状态
+  updateTravelogueStatus: (id, status) => api.post(`/api/travelogue/${id}/status`, { status }),
 };
 
 export default api;

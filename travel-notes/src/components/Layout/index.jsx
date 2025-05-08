@@ -97,11 +97,6 @@ const MainLayout = () => {
                 label: '仪表盘',
               },
               {
-                key: 'users',
-                icon: <UserOutlined />,
-                label: '用户管理',
-              },
-              {
                 key: 'reviews',
                 icon: <AuditOutlined />,
                 label: '审核管理',

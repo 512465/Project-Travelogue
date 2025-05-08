@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Table, Button, Input, Select, DatePicker, Space, Tag, Typography } from 'antd';
-import { SearchOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { Table, Button, Input, Select, DatePicker, Space, Tag, Typography, message } from 'antd';
+import { SearchOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { travelogueApi } from '../../services/api';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -11,88 +12,55 @@ const ReviewList = () => {
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState([]);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useState({
+    keyword: '',
+    travelogueStatus: '', // 或者其他默认状态值
+    page: 1,
+    limit: 10, // 或者其他默认分页大小
+  });
+  const [total, setTotal] = useState(0);
 
-  // 模拟获取审核数据
-  useEffect(() => {
-    // 模拟API请求
-    setTimeout(() => {
-      const mockReviews = [
-        {
-          id: 'REV-001',
-          title: '酒店评价审核',
-          content: '这家酒店服务态度很差，房间也不干净，不推荐入住。',
-          type: 'hotel',
-          submitter: '张三',
-          submitTime: '2023-10-15 14:30',
-          status: 'pending',
-        },
-        {
-          id: 'REV-002',
-          title: '景点评价审核',
-          content: '风景很美，但是人太多了，体验一般。',
-          type: 'attraction',
-          submitter: '李四',
-          submitTime: '2023-10-15 13:25',
-          status: 'approved',
-        },
-        {
-          id: 'REV-003',
-          title: '餐厅评价审核',
-          content: '菜品难吃，价格还贵，服务员态度也不好。',
-          type: 'restaurant',
-          submitter: '王五',
-          submitTime: '2023-10-15 11:18',
-          status: 'rejected',
-        },
-        {
-          id: 'REV-004',
-          title: '旅游路线评价',
-          content: '行程安排合理，导游讲解详细，非常满意。',
-          type: 'route',
-          submitter: '赵六',
-          submitTime: '2023-10-15 10:05',
-          status: 'pending',
-        },
-        {
-          id: 'REV-005',
-          title: '交通服务评价',
-          content: '司机很专业，车辆也很干净，体验很好。',
-          type: 'transport',
-          submitter: '钱七',
-          submitTime: '2023-10-14 16:42',
-          status: 'approved',
-        },
-        {
-          id: 'REV-006',
-          title: '酒店设施评价',
-          content: '游泳池很小，健身房设备陈旧，不值这个价格。',
-          type: 'hotel',
-          submitter: '孙八',
-          submitTime: '2023-10-14 15:30',
-          status: 'pending',
-        },
-        {
-          id: 'REV-007',
-          title: '景点服务评价',
-          content: '讲解员态度恶劣，完全不专业，浪费时间。',
-          type: 'attraction',
-          submitter: '周九',
-          submitTime: '2023-10-14 14:20',
-          status: 'pending',
-        },
-        {
-          id: 'REV-008',
-          title: '餐厅环境评价',
-          content: '环境很好，但是上菜太慢了，等了一个小时。',
-          type: 'restaurant',
-          submitter: '吴十',
-          submitTime: '2023-10-14 12:10',
-          status: 'pending',
-        },
-      ];
-      setReviews(mockReviews);
+
+
+  const fetchTravelogueData = async (params = searchParams) => {
+    setLoading(true);
+    try {
+      const response = await travelogueApi.getTravelogueList(params);
+      if (response && response.data && response.data.items) {
+        // 将API返回的数据映射为组件需要的格式
+        const formattedData = response.data.items.map(item => ({
+          id: item.travelogueId,
+          title: item.travelogueTitle,
+          content: item.travelogueContent,
+          submitter: item.travelogueAuthor,
+          submitTime: new Date(item.createTime).toLocaleString(),
+          status: item.travelogueStatus,
+          cover: item.travelogueCover,
+          images: item.travelogueImages,
+          userId: item.userId,
+          userAvatar: item.userAvatar,
+          // 保留原始数据，以便在详情页使用
+          originalData: item
+        }));
+        setReviews(formattedData);
+        setTotal(response.data.total || 0);
+      } else {
+        setReviews([]);
+        setTotal(0);
+        message.error(response?.message || '获取游记列表失败');
+      }
+    } catch (error) {
+      console.error('获取游记列表失败:', error);
+      message.error(error?.response?.data?.message || '获取游记列表请求失败');
+      setReviews([]);
+      setTotal(0);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
+  };
+
+  useEffect(() => {
+    fetchTravelogueData();
   }, []);
 
   // 处理查看详情
@@ -101,21 +69,54 @@ const ReviewList = () => {
   };
 
   // 处理审核通过
-  const handleApprove = (id) => {
-    setReviews(
-      reviews.map((review) =>
-        review.id === id ? { ...review, status: 'approved' } : review
-      )
-    );
+  const handleApprove = async (id) => {
+    try {
+      await travelogueApi.updateTravelogueStatus(id, 1);
+      message.success('审核通过成功');
+      // 更新本地数据状态
+      setReviews(
+        reviews.map((review) =>
+          review.id === id ? { ...review, status: 1 } : review
+        )
+      );
+      // 刷新数据
+      fetchTravelogueData();
+    } catch (error) {
+      console.error('审核通过失败:', error);
+      message.error('审核通过失败');
+    }
   };
 
   // 处理审核拒绝
-  const handleReject = (id) => {
-    setReviews(
-      reviews.map((review) =>
-        review.id === id ? { ...review, status: 'rejected' } : review
-      )
-    );
+  const handleReject = async (id) => {
+    try {
+      await travelogueApi.updateTravelogueStatus(id, -1);
+      message.success('审核拒绝成功');
+      // 更新本地数据状态
+      setReviews(
+        reviews.map((review) =>
+          review.id === id ? { ...review, status: -1 } : review
+        )
+      );
+      // 刷新数据
+      fetchTravelogueData();
+    } catch (error) {
+      console.error('审核拒绝失败:', error);
+      message.error('审核拒绝失败');
+    }
+  };
+
+  // 处理删除
+  const handleDelete = async (id) => {
+    try {
+      // 这里可以添加实际的删除API调用
+      // await travelogueApi.deleteTravelogue(id);
+      message.success('删除成功');
+      setReviews(reviews.filter((review) => review.id !== id));
+    } catch (error) {
+      console.error('删除失败:', error);
+      message.error('删除失败');
+    }
   };
 
   // 表格列定义
@@ -124,7 +125,20 @@ const ReviewList = () => {
       title: 'ID',
       dataIndex: 'id',
       key: 'id',
+      width: 80,
+    },
+    {
+      title: '封面',
+      dataIndex: 'cover',
+      key: 'cover',
       width: 100,
+      render: (cover) => (
+        <img 
+          src={cover ? cover.replace(/`/g, '').trim() : ''} 
+          alt="封面" 
+          style={{ width: 60, height: 40, objectFit: 'cover' }} 
+        />
+      ),
     },
     {
       title: '标题',
@@ -138,22 +152,6 @@ const ReviewList = () => {
       key: 'content',
       ellipsis: true,
       width: 250,
-    },
-    {
-      title: '类型',
-      dataIndex: 'type',
-      key: 'type',
-      width: 120,
-      render: (type) => {
-        const typeMap = {
-          hotel: '酒店',
-          attraction: '景点',
-          restaurant: '餐厅',
-          route: '路线',
-          transport: '交通',
-        };
-        return typeMap[type] || type;
-      },
     },
     {
       title: '提交人',
@@ -174,12 +172,14 @@ const ReviewList = () => {
       key: 'status',
       width: 100,
       render: (status) => {
-        if (status === 'pending') {
+        if (status === 0) {
           return <Tag color="blue">待审核</Tag>;
-        } else if (status === 'approved') {
+        } else if (status === 1) {
           return <Tag color="green">已通过</Tag>;
-        } else {
+        } else if (status === -1){
           return <Tag color="red">已拒绝</Tag>;
+        } else {
+          return <Tag color="black">删除</Tag>;
         }
       },
     },
@@ -197,7 +197,7 @@ const ReviewList = () => {
           >
             查看
           </Button>
-          {record.status === 'pending' && (
+          {record.status === 0 && (
             <>
               <Button
                 type="primary"
@@ -218,41 +218,84 @@ const ReviewList = () => {
               </Button>
             </>
           )}
+          {(record.status === 1 || record.status === -1) && (
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              size="small"
+              onClick={() => handleDelete(record.id)}
+            >
+              删除
+            </Button>
+          )}
         </Space>
       ),
     },
   ];
 
+
+
+  // 处理搜索参数变化
+  const handleSearchChange = (key, value) => {
+    setSearchParams(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  // 处理搜索按钮点击
+  const handleSearch = () => {
+    setSearchParams(prev => ({ ...prev, page: 1 })); // 重置到第一页
+    fetchTravelogueData({ ...searchParams, page: 1 });
+  };
+
+  // 处理重置按钮点击
+  const handleReset = () => {
+    const resetParams = {
+      keyword: '',
+      travelogueStatus: '',
+      page: 1,
+      limit: 10
+    };
+    setSearchParams(resetParams);
+    fetchTravelogueData(resetParams);
+  };
+
+  // 处理分页变化
+  const handlePageChange = (page, pageSize) => {
+    const newParams = { ...searchParams, page, limit: pageSize };
+    setSearchParams(newParams);
+    fetchTravelogueData(newParams);
+  };
+
   return (
     <div style={{ width: '100%', padding: '20px', maxWidth: '100%', boxSizing: 'border-box' }}>
-      <Title level={2}>审核管理</Title>
+      <Title level={2}>游记审核管理</Title>
 
       <div style={{ marginBottom: 16 }}>
         <Space wrap>
           <Input
-            placeholder="搜索标题/内容"
+            placeholder="搜索标题/作者"
             prefix={<SearchOutlined />}
             style={{ width: 200 }}
+            value={searchParams.keyword}
+            onChange={(e) => handleSearchChange('keyword', e.target.value)}
           />
-          <Select placeholder="审核状态" style={{ width: 120 }}>
+          <Select 
+            placeholder="审核状态" 
+            style={{ width: 120 }}
+            value={searchParams.travelogueStatus}
+            onChange={(value) => handleSearchChange('travelogueStatus', value)}
+          >
             <Option value="">全部</Option>
-            <Option value="pending">待审核</Option>
-            <Option value="approved">已通过</Option>
-            <Option value="rejected">已拒绝</Option>
+            <Option value="0">待审核</Option>
+            <Option value="1">已通过</Option>
+            <Option value="-1">已拒绝</Option>
           </Select>
-          <Select placeholder="内容类型" style={{ width: 120 }}>
-            <Option value="">全部</Option>
-            <Option value="hotel">酒店</Option>
-            <Option value="attraction">景点</Option>
-            <Option value="restaurant">餐厅</Option>
-            <Option value="route">路线</Option>
-            <Option value="transport">交通</Option>
-          </Select>
-          <RangePicker placeholder={['开始日期', '结束日期']} />
-          <Button type="primary" icon={<SearchOutlined />}>
+          <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch}>
             搜索
           </Button>
-          <Button>重置</Button>
+          <Button onClick={handleReset}>重置</Button>
         </Space>
       </div>
 
@@ -261,7 +304,14 @@ const ReviewList = () => {
         dataSource={reviews}
         rowKey="id"
         loading={loading}
-        pagination={{ pageSize: 10 }}
+        pagination={{
+          current: searchParams.page,
+          pageSize: searchParams.limit,
+          total: total,
+          onChange: handlePageChange,
+          showSizeChanger: true,
+          showTotal: (total) => `共 ${total} 条记录`
+        }}
         style={{ width: '100%' }}
         scroll={{ x: 'max-content' }}
       />
