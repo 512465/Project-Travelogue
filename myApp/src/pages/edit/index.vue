@@ -218,7 +218,8 @@ const onPublish = async () => {
     travelogueTitle: title.value,
     travelogueContent: content.value,
     travelogueCover: files.value[0].url,
-    travelogueImages: files.value
+    travelogueImages: files.value,
+    travelogueStatus: 0
   }).then((res) => {
     Taro.hideLoading()
     Taro.showToast({ title: '发布成功', icon: 'success' })
