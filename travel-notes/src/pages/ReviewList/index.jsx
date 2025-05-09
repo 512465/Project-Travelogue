@@ -79,8 +79,16 @@ const ReviewList = () => {
 
   // 删除成功后的回调函数
   const handleDeleteSuccess = () => {
-    // 刷新数据
-    fetchTravelogueData();
+    // 检查当前页是否还有数据
+    if (reviews.length === 1 && searchParams.page > 1) {
+      // 如果当前页只有一条数据且不是第一页，则跳转到上一页
+      const newPage = searchParams.page - 1;
+      setSearchParams(prev => ({ ...prev, page: newPage }));
+      fetchTravelogueData({ ...searchParams, page: newPage });
+    } else {
+      // 否则刷新当前页数据
+      fetchTravelogueData();
+    }
   };
 
   // 表格列定义
