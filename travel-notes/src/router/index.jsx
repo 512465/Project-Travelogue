@@ -3,6 +3,7 @@ import Layout from '../components/Layout';
 import Login from '../pages/Login';
 import Dashboard from '../pages/Dashboard';
 import UserManagement from '../pages/UserManagement';
+import AdminManagement from '../pages/AdminManagement';
 import ReviewList from '../pages/ReviewList';
 import ReviewDetail from '../pages/ReviewDetail';
 
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
       {
         path: 'users',
         element: <UserManagement />,
+      },
+      {
+        path: 'admins',
+        element: <AdminManagement />,
       },
       {
         path: 'reviews',

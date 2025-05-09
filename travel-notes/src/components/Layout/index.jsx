@@ -25,6 +25,7 @@ const MainLayout = () => {
     const path = location.pathname;
     if (path.includes('/dashboard')) return ['dashboard'];
     if (path.includes('/users')) return ['users'];
+    if (path.includes('/admins')) return ['admins'];
     if (path.includes('/reviews')) return ['reviews'];
     return ['dashboard'];
   };
@@ -95,6 +96,11 @@ const MainLayout = () => {
                 key: 'dashboard',
                 icon: <DashboardOutlined />,
                 label: '仪表盘',
+              },
+              {
+                key: 'admins',
+                icon: <UserOutlined />,
+                label: '管理员管理',
               },
               {
                 key: 'reviews',

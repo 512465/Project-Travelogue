@@ -25,13 +25,38 @@ const Login = () => {
       console.log('Login response:', response); // 打印 API 响应
       // 根据新的响应体结构检查登录是否成功并获取 token
       if (response && response.success && response.data && response.data.access_token) {
-        // 派发 login action
-        const { access_token, ...userData } = response.data; // 假设 response.data 包含 access_token 和其他用户信息
-        // 修正：直接传递userData和access_token，与store中的reducer结构匹配
-        dispatch(loginAction({ ...userData, access_token }));
-        console.log('Login successful, token:', access_token);
-        message.success(response.message || '登录成功'); // 使用 API 返回的 message
-        navigate('/dashboard'); // 登录成功后跳转到仪表盘
+        const { access_token, adminId } = response.data; // 获取token和管理员ID
+        
+        try {
+          // 获取管理员详细信息
+          const adminInfoResponse = await userApi.getAdminInfo(adminId);
+          if (adminInfoResponse && adminInfoResponse.success && adminInfoResponse.data) {
+            // 派发 login action，包含完整的管理员信息和token
+            const adminData = adminInfoResponse.data;
+            dispatch(loginAction({ 
+              ...adminData, 
+              access_token 
+            }));
+            console.log('Login successful with admin details:', adminData);
+            message.success(response.message || '登录成功'); // 使用 API 返回的 message
+            navigate('/dashboard'); // 登录成功后跳转到仪表盘
+          } else {
+            // 如果获取详情失败，仍然使用基本信息登录
+            const { access_token, ...userData } = response.data;
+            dispatch(loginAction({ ...userData, access_token }));
+            console.log('Login successful with basic info:', userData);
+            message.success(response.message || '登录成功，但获取详细信息失败');
+            navigate('/dashboard');
+          }
+        } catch (detailError) {
+          // 如果获取详情出错，仍然使用基本信息登录
+          console.error('获取管理员详情失败:', detailError);
+          const { access_token, ...userData } = response.data;
+          dispatch(loginAction({ ...userData, access_token }));
+          console.log('Login successful with basic info:', userData);
+          message.success(response.message || '登录成功，但获取详细信息失败');
+          navigate('/dashboard');
+        }
       } else {
         // 处理 API 返回但登录失败的情况 (e.g., success: false, or missing token)
         message.error(response?.message || '登录失败，请检查用户名或密码');
