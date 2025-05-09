@@ -116,6 +116,7 @@ const ReviewList = () => {
       key: 'content',
       ellipsis: true,
       width: 250,
+      render: (text) => <span title={text} style={{ display: 'inline-block', maxWidth: 230, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>{text}</span>,
     },
     {
       title: '提交人',

@@ -46,6 +46,14 @@ export const userApi = {
   register: (data) => api.post('/api/admin', data),
   // 登录
   login: (data) => api.post('/api/auth-admin/login', data),
+  // 获取管理员详细信息
+  getAdminInfo: (adminId) => api.get(`/api/admin/${adminId}`),
+  // 获取管理员列表
+  getAdminList: (params) => api.get('/api/admin', { params }),
+  // 更新管理员
+  updateAdmin: (adminId, data) => api.patch(`/api/admin/${adminId}`, data),
+  // 删除管理员
+  deleteAdmin: (adminId) => api.delete(`/api/admin/${adminId}`),
   // 获取用户信息
   getUserInfo: () => api.get('/user/info'),
   // 获取用户列表
@@ -57,6 +65,7 @@ export const userApi = {
   // 删除用户
   deleteUser: (id) => api.delete(`/users/${id}`),
 };
+
 
 // 审核相关API
 export const reviewApi = {
