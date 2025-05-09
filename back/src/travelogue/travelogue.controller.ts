@@ -14,6 +14,7 @@ import { TravelogueService } from './travelogue.service';
 import { CreateTravelogueDto } from './dto/create-travelogue.dto';
 import { UpdateTravelogueDto } from './dto/update-travelogue.dto';
 import { AuthUserGuard } from 'src/auth-user/authUser.guard';
+import { AuthAdminGuard } from 'src/auth-admin/authAdmin.guard';
 
 @Controller('travelogue')
 export class TravelogueController {
@@ -44,6 +45,13 @@ export class TravelogueController {
     });
   }
 
+  @Get('userCollects')
+  @UseGuards(AuthUserGuard)
+  userCollectsList(@Request() req) {
+    console.log(req.user.sub);
+    return this.travelogueService.userCollectsList(req.user.sub);
+  }
+
   @Get('list')
   findAllList(
     @Query('page') page?: number,
@@ -59,10 +67,30 @@ export class TravelogueController {
     });
   }
 
+  @Get('userLikes')
+  @UseGuards(AuthUserGuard)
+  userLikes(@Request() req) {
+    return this.travelogueService.userLikes(req.user.sub);
+  }
+
   @Get(':id')
   @UseGuards(AuthUserGuard)
   findOne(@Param('id') id: string) {
     return this.travelogueService.findOne(+id);
+  }
+
+  @Patch('admin/:id')
+  @UseGuards(AuthAdminGuard)
+  updateAdmin(
+    @Param('id') id: string,
+    @Body() updateTravelogueDto: UpdateTravelogueDto,
+    @Request() req,
+  ) {
+    return this.travelogueService.updateAdmin(
+      +id,
+      updateTravelogueDto,
+      req.user.sub,
+    );
   }
 
   @Patch(':id')
@@ -79,9 +107,33 @@ export class TravelogueController {
     );
   }
 
+  @Patch('like/:id')
+  @UseGuards(AuthUserGuard)
+  like(@Param('id') id: string, @Request() req) {
+    return this.travelogueService.like(+id, req.user.sub);
+  }
+
+  @Patch('travelogueViews/:id')
+  // @UseGuards(AuthUserGuard)
+  travelogueViews(@Param('id') id: string) {
+    return this.travelogueService.travelogueViews(+id);
+  }
+
+  @Patch('userCollects/:id')
+  @UseGuards(AuthUserGuard)
+  userCollects(@Param('id') id: string, @Request() req) {
+    return this.travelogueService.userCollects(+id, req.user.sub);
+  }
+
   @Delete(':id')
   @UseGuards(AuthUserGuard)
   remove(@Param('id') id: string, @Request() req) {
     return this.travelogueService.remove(+id, req.user.sub);
+  }
+
+  @Delete('admin/:id')
+  @UseGuards(AuthAdminGuard)
+  removeAdmin(@Param('id') id: string, @Request() req) {
+    return this.travelogueService.removeAdmin(+id, req.user.sub);
   }
 }

@@ -1,20 +1,70 @@
 <template>
   <view class="container">
     <view>
-      <view>
-        <AtSearchBar @clear="onClear" v-model:value="searchQuery" placeholder="搜索游记标题或作者昵称"
-          @action-click="debouncedSearch" />
-      </view>
+      <AtSearchBar @clear="onClear" v-model:value="searchQuery" placeholder="搜索游记标题或作者昵称"
+                   @action-click="debouncedSearch" />
     </view>
     <view class="waterfall-container">
-      <view v-for="(item, index) in travelCards" :key="index" class="waterfall-item"
-        @tap="gotoDetail(item.travelogueId)">
-        <image :src="item.travelogueCover" class="item-image" mode="widthFix" />
-        <view class="item-content">
-          <text class="item-title">{{ item.travelogueTitle }}</text>
-          <view class="user-info">
-            <image class="avatar" :src="item.authorAvatar || defaultAvatar" />
-            <text class="user-name">{{ item.travelogueAuthor }}</text>
+      <!-- 左列 -->
+      <view class="waterfall-column-left" id="leftColumn">
+        <view v-for="(item, index) in leftItems" :key="item.travelogueId" class="waterfall-item"
+              @tap="gotoDetail(item.travelogueId)">
+          <view v-if="item.isImage" class="item-image-wrapper" :style="{
+            paddingBottom: (item.travelogueCoverHeight && item.travelogueCoverWidth)
+              ? (item.travelogueCoverHeight / item.travelogueCoverWidth * 100) + '%'
+              : '100%'
+          }">
+            <image :src="item.travelogueCover" class="item-image" mode="aspectFill" />
+          </view>
+
+          <view v-else class="video-wrapper">
+            <video :src="item.travelogueCover" class="item-image" />
+            <view class="video-mask" @click.stop.prevent></view>
+          </view>
+          <view class="item-content">
+            <text class="item-title">{{ item.travelogueTitle }}</text>
+            <view class="user-info">
+              <view class="avatar-wrapper">
+                <image class="avatar" :src="'http://175.24.138.67:8586' + item.userAvatar || defaultAvatar" />
+                <text class="user-name">{{ item.travelogueAuthor }}</text>
+              </view>
+              <view class="views-count">
+                <AtIcon value='eye' size='12'></AtIcon>
+                <view>{{ item.travelogueViews }}</view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 右列 -->
+      <view class="waterfall-column-right" id="rightColumn">
+        <view v-for="(item, index) in rightItems" :key="item.travelogueId" class="waterfall-item"
+              @tap="gotoDetail(item.travelogueId)">
+          <view v-if="item.isImage" class="item-image-wrapper" :style="{
+            paddingBottom: (item.travelogueCoverHeight && item.travelogueCoverWidth)
+              ? (item.travelogueCoverHeight / item.travelogueCoverWidth * 100) + '%'
+              : '100%'
+          }">
+            <image :src="item.travelogueCover" class="item-image" mode="aspectFill" />
+          </view>
+
+          <view v-else class="video-wrapper">
+            <video :src="item.travelogueCover" class="item-image" />
+            <view class="video-mask" @click.stop.prevent></view>
+          </view>
+          <view class="item-content">
+            <text class="item-title">{{ item.travelogueTitle }}</text>
+            <view class="user-info">
+              <view class="avatar-wrapper">
+                <image class="avatar" :src="'http://175.24.138.67:8586' + item.userAvatar || defaultAvatar" />
+                <text class="user-name">{{ item.travelogueAuthor }}</text>
+              </view>
+              <view class="views-count">
+                <AtIcon value='eye' size='12'></AtIcon>
+                <view>{{ item.travelogueViews }}</view>
+              </view>
+            </view>
           </view>
         </view>
       </view>
@@ -22,133 +72,203 @@
     <view v-if="loading" class="loading">加载中...</view>
     <view v-if="!hasMore" class="loading">没有更多数据了</view>
   </view>
-
 </template>
 
 <script setup>
-import './index.scss';
-import { ref, onMounted } from 'vue';
-import { AtSearchBar } from 'taro-ui-vue3';
-import Taro, { usePullDownRefresh, useReachBottom } from '@tarojs/taro';
+import './index.scss'
+import { ref, onMounted, nextTick } from 'vue'
+import { AtSearchBar, AtIcon } from 'taro-ui-vue3'
+import Taro, { usePullDownRefresh, useReachBottom } from '@tarojs/taro'
 import { getTravelogs, searchTravelogs } from '../../api/travelogue.js'
+import loadingImg from '../../assets/loading.gif'
+import errorImg from '../../assets/error.jpg'
 
-const travelCards = ref([]); // 存储游记卡片数据
-const searchQuery = ref(''); // 搜索查询
-const loading = ref(false); // 加载状态
-let page = 1; // 当前页数
-const hasMore = ref(true); // 是否还有更多数据
-const defaultAvatar = 'https://img.soogif.com/esrLXK1tXYDebZBHAKgmGx58EZd1smzH.jpeg_s400x0';
+const travelCards = ref([])
+const searchQuery = ref('')
+const loading = ref(false)
+const hasMore = ref(true)
+const imageSizeCache = new Map()
+let page = 1
 
+const leftItems = ref([])
+const rightItems = ref([])
+const defaultAvatar = 'https://img.soogif.com/esrLXK1tXYDebZBHAKgmGx58EZd1smzH.jpeg_s400x0'
+const errorImage = errorImg
 
-// 分页查询函数
-const loadTravelCards = async (isRefresh = false) => {
-  if (loading.value || !hasMore.value && !isRefresh) return;
+// 判断是否为图片
+const isImage = (url) => {
+  return url && url.match(/\.(jpg|jpeg|png|gif|bmp|webp)(\?.*)*$/i)
+}
 
-  loading.value = true;
-  if (isRefresh) {
-    page = 1;
-    hasMore.value = true;
+// 页面跳转
+const gotoDetail = (travelogueId) => {
+  Taro.navigateTo({
+    url: `/pages/travelDetail/index?id=${travelogueId}`
+  })
+}
+// 缓存图片尺寸
+const getImageSize = async (url) => {
+  if (!url) return { width: 1, height: 1 }
+
+  if (imageSizeCache.has(url)) {
+    return imageSizeCache.get(url)
   }
 
-  const res = await getTravelogs({
-    page: page,
-    limit: 10
+  try {
+    const res = await Taro.getImageInfo({ src: url })
+    const size = { width: res.width, height: res.height }
+    imageSizeCache.set(url, size)
+    return size
+  } catch (e) {
+    console.warn('图片获取失败', url)
+    const fallback = { width: 1, height: 1 }
+    imageSizeCache.set(url, fallback)
+    return fallback
+  }
+}
+
+const cacheImageSizes = async (items) => {
+  const sizePromises = items.map(async (item) => {
+    item.isImage = isImage(item.travelogueCover)
+    if (item.isImage && item.travelogueCover) {
+      // 获取图片尺寸并缓存
+      const size = await getImageSize(item.travelogueCover);
+      item.travelogueCoverWidth = size.width;
+      item.travelogueCoverHeight = size.height;
+    } else {
+      item.travelogueCoverWidth = 1;
+      item.travelogueCoverHeight = 1;
+    }
   });
 
-  const data = res.data.items;
-
-  if (isRefresh) {
-    travelCards.value = data;
-  } else {
-    travelCards.value.push(...data);
-  }
-
-  // 判断是否还有更多
-  if (data.length < 10) {
-    hasMore.value = false;
-  } else {
-    page++;
-  }
-
-  loading.value = false;
-
-  // 结束下拉刷新动画
-  if (isRefresh) {
-    Taro.stopPullDownRefresh();
-  }
-};
-
-
-// 防抖函数
-const debounce = (func, delay) => {
-  let timer;
-  return function (...args) {
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(() => {
-      func.apply(this, args);
-    }, delay);
-  };
-};
-
-// 执行搜索逻辑
-const performSearch = async () => {
-  console.log(searchQuery.value)
-  if (searchQuery.value) {
-    loading.value = true;
-    const res = await searchTravelogs(searchQuery.value);
-    console.log(res)
-    travelCards.value = res.data.items; // 假设从 API 获取的数据
-    loading.value = false;
-  } else {
-    // 如果搜索框为空，重新加载所有数据
-    loadTravelCards();
-  }
-};
-
-// 防抖搜索
-const debouncedSearch = debounce(performSearch, 300);
-
-// 计算属性，根据搜索查询过滤游记卡片
-// const filteredTravelCards = () => {
-//   return travelCards.value.filter(card => {
-//     const titleIncludes = card.travelogueTitle ? card.travelogueTitle.includes(searchQuery.value) : false;
-//     const userIncludes = card.travelogueAuthor ? card.travelogueAuthor.includes(searchQuery.value) : false;
-//     return titleIncludes || userIncludes;
-//   });
-// };
-
-const onClear = () => {
-  searchQuery.value = '';
-  loadTravelCards();
+  await Promise.all(sizePromises);
 }
 
 
-// 跳转到详情页
-const gotoDetail = (travelogueId) => {
-  console.log(travelogueId)
-  Taro.navigateTo({
-    url: `/pages/travelDetail/index?id=${travelogueId}`
-  });
-};
 
-// 下拉刷新
-usePullDownRefresh(() => {
-  console.log('下拉刷新');
-  loadTravelCards(true);
-});
+// 获取列高度
+const getColumnHeights = () => {
+  return new Promise((resolve) => {
+    const query = Taro.createSelectorQuery()
+    query.select('#leftColumn').boundingClientRect()
+    query.select('#rightColumn').boundingClientRect()
+    query.exec((res) => {
+      const [left, right] = res
+      resolve({
+        leftHeight: left?.height || 0,
+        rightHeight: right?.height || 0
+      })
+    })
+  })
+}
+
+// 插入 item 到较矮列
+const insertItemToColumn = async (item) => {
+  // 插入项到较矮的列
+  await nextTick();
+  const { leftHeight, rightHeight } = await getColumnHeights();
+
+  if (leftHeight <= rightHeight) {
+    leftItems.value.push(item);
+  } else {
+    rightItems.value.push(item);
+  }
+}
 
 
-// 触底更多
-useReachBottom(() => {
-  console.log('触底加载更多');
-  loadTravelCards();
-});
+// 分配多个卡片
+const distributeItemsToColumns = async (items) => {
+  for (const item of items) {
+    await insertItemToColumn(item)
+  }
+}
 
-// 页面加载时获取数据
+// 数据加载
+const loadTravelCards = async (isRefresh = false) => {
+  if (loading.value || (!hasMore.value && !isRefresh)) return
+  loading.value = true
+
+  if (isRefresh) {
+    page = 1
+    hasMore.value = true
+    travelCards.value = []
+    leftItems.value = []
+    rightItems.value = []
+  }
+
+  const res = await getTravelogs({ page, limit: 10 })
+  const items = res.data.items || []
+  // 缓存图片尺寸
+  await cacheImageSizes(items);
+  console.log('items', items)
+
+  if (isRefresh) {
+    travelCards.value = items
+  } else {
+    travelCards.value.push(...items)
+  }
+
+  if (items.length < 10) hasMore.value = false
+  else page++
+
+  await distributeItemsToColumns(items)
+
+  loading.value = false
+  if (isRefresh) Taro.stopPullDownRefresh()
+}
+
+
+// 搜索相关逻辑
+const performSearch = async () => {
+  if (searchQuery.value) {
+    loading.value = true
+    const res = await searchTravelogs(searchQuery.value)
+    const items = res.data.items || []
+
+    // 缓存图片尺寸
+    await cacheImageSizes(items);
+    console.log('items', items)
+    travelCards.value = items || []
+
+    if (items.length < 10) hasMore.value = false
+    else page++
+
+    await distributeItemsToColumns(items)
+
+    loading.value = false
+
+    leftItems.value = []
+    rightItems.value = []
+    await distributeItemsToColumns(travelCards.value)
+    loading.value = false
+  } else {
+    loadTravelCards(true)
+  }
+}
+
+const debounce = (fn, delay) => {
+  let timer
+  return function (...args) {
+    if (timer) clearTimeout(timer)
+    timer = setTimeout(() => {
+      fn.apply(this, args)
+    }, delay)
+  }
+}
+
+const debouncedSearch = debounce(performSearch, 300)
+
+const onClear = () => {
+  searchQuery.value = ''
+  loadTravelCards(true)
+}
+
+// 下拉刷新和触底加载
+usePullDownRefresh(() => loadTravelCards(true))
+useReachBottom(() => loadTravelCards())
+
+// 页面加载
 onMounted(() => {
-  const user = Taro.getStorageSync('user')
-  console.log(user)
-  loadTravelCards();
-});
-
+  loadTravelCards(true)
+})
 </script>

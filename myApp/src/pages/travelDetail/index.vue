@@ -1,52 +1,87 @@
 <template>
   <view class="travel-detail-container">
-    <!-- 加载状态 -->
-    <view v-if="loading" class="custom-loading">
-      <at-loading color="#6190E8" size="30" />
-      <text class="loading-text">加载中...</text>
-    </view>
-
-    <!-- 错误状态 -->
-    <view v-else-if="error" class="custom-error">
-      <at-icon name="close-circle" size="40" color="#FF4949" />
-      <text class="error-text">{{ error }}</text>
-      <at-button type="primary" @click="retry">重试</at-button>
-    </view>
-
-    <!-- 内容展示 -->
-    <template v-else>
-      <image
-        :src="detail.travelogueCover"
-        mode="aspectFill"
-        class="detail-cover"
-      />
-
-      <view class="content-wrapper">
-        <text class="title">{{ detail.travelogueTitle }}</text>
-        <!-- <text class="subtitle">{{ detail.subtitle }}</text> -->
-
-        <view class="meta">
-          <at-tag size="small">{{ detail.travelogueAuthor }}</at-tag>
-          <at-tag size="small">{{ formatDate(detail.createTime) }}</at-tag>
-        </view>
-
-        <view class="content">
-          {{ detail.travelogueContent }}
-        </view>
+    <!-- 页面主体 -->
+    <scroll-view scroll-y class="content-scroll">
+      <!-- 加载状态 -->
+      <view v-if="loading" class="custom-loading">
+        <at-loading color="#6190E8" size="30" />
+        <text class="loading-text">加载中...</text>
       </view>
 
-      <at-fab class="back-btn" @click="handleBack">
-        <text class="at-fab__icon at-icon at-icon-chevron-left"></text>
-      </at-fab>
-    </template>
+      <!-- 错误状态 -->
+      <view v-else-if="error" class="custom-error">
+        <at-icon name="close-circle" size="40" color="#FF4949" />
+        <text class="error-text">{{ error }}</text>
+        <at-button type="primary" @click="retry">重试</at-button>
+      </view>
+
+      <!-- 正文内容 -->
+      <template v-else>
+        <!-- 轮播图 -->
+        <view class="swiper-wrapper">
+          <swiper class="test-h" indicatorColor="#999" indicatorActiveColor="#333" :current="current"
+                  :duration="duration" :interval="interval" circular="true" autoplay="true" indicatorDots="true"
+                  @change="onSwiperChange">
+            <swiper-item v-for="(item, idx) in imgs" :key="idx">
+              <view v-if="item.type === 'video'" @tap="playVideo(item)">
+                <video :src="item.url" id="myVideo" controls class="slide-image" />
+              </view>
+              <view v-else @tap="viewImage(item.url)">
+                <image :src="item.url" class="slide-image" />
+              </view>
+            </swiper-item>
+          </swiper>
+          <view class="swiper-indicator">
+            {{ current + 1 }}/{{ imgs.length }}
+          </view>
+        </view>
+
+        <!-- 作者 -->
+        <view class="author-info">
+          <image :src="severUrl + detail.userAvatar || defaultAvatar" class="author-avatar" />
+          <text class="author-name">{{ detail.travelogueAuthor }}</text>
+        </view>
+
+        <!-- 内容 -->
+        <view class="content-wrapper">
+          <text class="title">{{ detail.travelogueTitle }}</text>
+          <view class="content">
+            {{ detail.travelogueContent }}
+          </view>
+          <text class="edit-time">编辑于 {{ formatDate(detail?.updatedAt || detail?.updateTime) }} |</text>
+        </view>
+      </template>
+    </scroll-view>
+
+    <!-- ✅ 固定底部操作栏 -->
+    <view class="footer-info-fixed">
+      <view class="interaction-bar">
+        <view class="interaction-item">
+          <Button openType="share" class="share-btn">
+            <at-icon openType="share" value="external-link" size="20" color="#666" />
+          </Button>
+        </view>
+        <view class="interaction-item" @tap="handleLike">
+          <at-icon v-if="!isLike" value="heart" size="20" color="#666" />
+          <at-icon v-else value="heart-2" size="20" color="red" />
+          <text>{{ detail?.travelogueLikes || 0 }}</text>
+        </view>
+        <view class="interaction-item" @tap="handleCollect">
+          <at-icon v-if="!isCollects" value="star" size="20" color="#666" />
+          <at-icon v-else value="star-2" size="20" color="red" />
+          <text>{{ detail?.travelogueCollects || 0 }}</text>
+        </view>
+      </view>
+    </view>
   </view>
 </template>
+
 
 <script setup>
 import './index.scss'
 import { ref, onMounted } from 'vue'
-import Taro from '@tarojs/taro'
-// import { getTravelogueDetail } from '../../api/travelogue.js'
+import Taro, { useShareAppMessage, useShareTimeline } from '@tarojs/taro'
+import { useUserStore } from '../../stores/modules/user'
 import {
   AtLoading,
   AtIcon,
@@ -54,22 +89,25 @@ import {
   AtTag,
   AtFab
 } from 'taro-ui-vue3'
-// const id = ref(Taro.getCurrentInstance().router?.params?.id || '')
-// console.log(id.value)
-const token =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJOYW1lIjoiVXNlcjEyMyIsImlhdCI6MTc0NjE3MTI5NiwiZXhwIjoxNzQ2Nzc2MDk2fQ.2MB5y7xB8AZC_vgebYbQguiipZQcB02AwYcF2ImSe9s'
+import { getTravelogueDetail, isCollectSever, isLikeSever } from '../../api/travelogue'
+import { getUserInfo } from '../../api/user'
 
-
+const userStore = useUserStore()
 // 响应式状态
 const loading = ref(true)
 const error = ref('')
 const detail = ref(null)
+const current = ref(0)
+const duration = 500
+const interval = 5000
+const imgs = ref([])
+const severUrl = 'http://175.24.138.67:8586'
+const imgUrls = ref([])
+const isLike = ref(false)
+const isCollects = ref(false)
 const id = ref(Taro.getCurrentInstance().router?.params?.id || '')
 
-// 方法定义
-const handleBack = () => Taro.navigateBack()
-
-const formatDate = timestamp => 
+const formatDate = timestamp =>
   new Date(timestamp).toLocaleDateString()
 
 const retry = async () => {
@@ -81,33 +119,91 @@ const retry = async () => {
 
 const fetchData = async () => {
   try {
-    const res = await Taro.request({
-      url: `http://127.0.0.1:3000/api/travelogue/${id.value}`,
-      method: 'GET',
-      header: {
-        Authorization: `Bearer ${token}`
+    const res = await getTravelogueDetail(id.value);
+    detail.value = res.data
+    imgs.value = detail.value.travelogueImages.map((item) => {
+      return {
+        url: item.url,
+        type: item.type
       }
     })
-
-    // const res = await getTravelogueDetail(id.value)
-    console.log(res, 23265)
-
-    detail.value = res.data.data
-    Taro.setNavigationBarTitle({ title: res.data.data.travelogueTitle })
+    Taro.setNavigationBarTitle({ title: res.data.travelogueTitle })
   } catch (err) {
+    console.error(err)
     error.value = '数据加载失败'
   } finally {
     loading.value = false
   }
 }
 
+const onSwiperChange = (e) => {
+  current.value = e.detail.current
+}
+
+// 视频点击处理方法
+const playVideo = (item) => {
+  if (item.type === 'video') {
+    Taro.previewMedia({
+      sources: [
+        {
+          url: item.url,
+          type: 'video'
+        }
+      ],
+      current: 0
+    })
+  }
+}
+
+
+// 图片点击查看方法
+const viewImage = (url) => {
+  Taro.previewImage({
+    current: url,  // 当前显示的图片链接
+    urls: imgs.value.map(item => item.url)  // 所有图片的链接
+  })
+}
+
+const handleLike = () => {
+  isLike.value = !isLike.value
+  if (isLike.value) {
+    detail.value.travelogueLikes += 1
+  } else {
+    detail.value.travelogueLikes -= 1
+  }
+  isLikeSever(id.value)
+}
+
+const handleCollect = () => {
+  isCollects.value = !isCollects.value
+  if (isCollects.value) {
+    detail.value.travelogueCollects += 1
+  } else {
+    detail.value.travelogueCollects -= 1
+  }
+  isCollectSever(id.value)
+}
+
+useShareAppMessage(() => {
+  return {
+    title: detail.value?.travelogueTitle || '精彩游记',
+    path: `/pages/travel-detail/index?id=${id.value}`,
+    imageUrl: imgs.value[0]?.url || ''  // 分享缩略图
+  }
+})
+
 // 生命周期
-onMounted(() => {
+onMounted(async () => {
   if (!id.value) {
     error.value = '无效的ID参数'
     loading.value = false
     return
   }
+  const res = await getUserInfo(userStore.userInfo.userId)
+  if (res.data.userLikes.includes(Number(id.value))) isLike.value = true
+  else isLike.value = false
+  if (res.data.userCollects.includes(Number(id.value))) isCollects.value = true
+  else isCollects.value = false
   fetchData()
 })
 </script>
