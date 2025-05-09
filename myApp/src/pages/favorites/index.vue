@@ -54,7 +54,7 @@ const getTravelogs = async () => {
 
 // 是否为图片
 const isImage = (url) => {
-  return /\.(jpg|jpeg|png|gif|bmp)$/.test(url)
+  return /\.(jpg|jpeg|png|gif|bmp|webp)$/.test(url)
 }
 
 onMounted(() => {

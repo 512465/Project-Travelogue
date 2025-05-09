@@ -1,142 +1,150 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Upload } from './entities/upload.entity';
-import * as fs from 'fs';
+import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import * as sharp from 'sharp';
+import { Upload } from './entities/upload.entity';
+
+// 配置常量
+const CONFIG = {
+  UPLOAD_DIR: path.join(process.cwd(), 'uploads'),
+  MAX_WIDTH: 1920,
+  COMPRESS: {
+    webp: { quality: 5, alphaQuality: 5, effort: 0 },
+    jpeg: { quality: 20, mozjpeg: true },
+  },
+  ALLOWED_MIME_TYPES: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+  MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
+};
 
 @Injectable()
 export class UploadService {
-  private uploadDir: string;
+  private readonly logger = new Logger(UploadService.name);
 
   constructor(
     @InjectRepository(Upload)
     private uploadRepository: Repository<Upload>,
   ) {
-    this.uploadDir = path.join(process.cwd(), 'uploads');
+    this.initializeUploadDir();
+    sharp.cache({ files: 50 }); // 配置Sharp缓存
+  }
 
-    // 确保上传目录存在
-    if (!fs.existsSync(this.uploadDir)) {
-      fs.mkdirSync(this.uploadDir, { recursive: true });
+  private async initializeUploadDir() {
+    try {
+      await fs.access(CONFIG.UPLOAD_DIR);
+    } catch {
+      await fs.mkdir(CONFIG.UPLOAD_DIR, { recursive: true });
     }
   }
 
   async uploadFile(file: Express.Multer.File): Promise<Upload> {
     try {
-      // 使用 Sharp 进行图片压缩
-      const compressedImage = sharp(file.buffer);
-
-      // 设置压缩参数
-      const compressedBuffer = await compressedImage
-        .metadata()
-        .then((metadata) => {
-          // 限制最大宽度为 1920px（保持比例）
-          const maxWidth = 1920;
-          const shouldResize = metadata.width > maxWidth;
-
-          return compressedImage
-            .resize(shouldResize ? maxWidth : null) // 仅当需要时才缩放
-            .jpeg({
-              quality: 40, // 降低JPEG质量
-              mozjpeg: true, // 启用更优压缩算法
-            })
-            .png({
-              quality: 60, // 降低PNG质量
-              compressionLevel: 5, // 使用较低的压缩级别
-            })
-            .webp({ quality: 45 }) // 降低WebP质量
-            .toBuffer();
-        });
-
-      // 生成文件 hash（基于压缩后的内容）
-      const hash = crypto
-        .createHash('sha256')
-        .update(compressedBuffer)
-        .digest('hex');
-
-      // 统一转换为 WebP 格式（可选）
-      const ext = '.webp'; // 或保留原格式 path.extname(file.originalname)
-      const key = `${hash}${ext}`;
-      const filePath = path.join(this.uploadDir, key);
-
-      // 保存压缩后的文件
-      await fs.promises.writeFile(filePath, compressedBuffer);
-
-      // 创建上传记录
-      const upload = new Upload();
-      upload.hash = hash;
-      upload.key = key;
-      upload.url = `/uploads/${key}`;
-
-      return await this.uploadRepository.save(upload);
+      this.validateFile(file);
+      return await this.processImage(file);
     } catch (error) {
-      // 判断是否为 Sharp 图像处理错误（通过 error.message 判断）
-      if (error instanceof Error && /Invalid input/.test(error.message)) {
-        throw new Error('无效的图片文件');
-      }
-      try {
-        // 生成文件hash
-        const hash = crypto
-          .createHash('sha256')
-          .update(file.buffer)
-          .digest('hex');
-
-        // 生成文件名（使用原始文件扩展名）
-        const ext = path.extname(file.originalname);
-        const key = `${hash}${ext}`;
-        const filePath = path.join(this.uploadDir, key);
-
-        // 保存文件
-        await fs.promises.writeFile(filePath, file.buffer);
-
-        // 创建上传记录
-        const upload = new Upload();
-        upload.hash = hash;
-        upload.key = key;
-        upload.url = `/uploads/${key}`;
-
-        // 保存到数据库
-        return await this.uploadRepository.save(upload);
-      } catch (error) {
-        console.error('Upload error:', error);
-        throw new Error('File upload failed: ' + error.message);
-      }
+      return this.handleError(error, file);
     }
   }
 
   async uploadFiles(files: Express.Multer.File[]): Promise<Upload[]> {
-    try {
-      return await Promise.all(
-        files.map(async (file) => {
-          // 复用单个文件上传逻辑
-          const hash = crypto
-            .createHash('sha256')
-            .update(file.buffer)
-            .digest('hex');
+    return Promise.all(files.map((file) => this.uploadFile(file)));
+  }
 
-          const ext = path.extname(file.originalname);
-          const key = `${hash}${ext}`;
-          const filePath = path.join(this.uploadDir, key);
-
-          await fs.promises.writeFile(filePath, file.buffer);
-
-          const upload = new Upload();
-          upload.hash = hash;
-          upload.key = key;
-          upload.url = `/uploads/${key}`;
-
-          return this.uploadRepository.save(upload);
-        }),
+  private validateFile(file: Express.Multer.File) {
+    if (file.size > CONFIG.MAX_FILE_SIZE) {
+      throw new Error(
+        `文件大小超过限制: ${(file.size / 1024 / 1024).toFixed(2)}MB`,
       );
-    } catch (error) {
-      console.error('Batch upload error:', error);
-      throw new Error(`批量上传失败: ${error.message}`);
     }
   }
 
-  async getFiles(page: number = 1, limit: number = 10) {
+  private async processImage(file: Express.Multer.File): Promise<Upload> {
+    try {
+      const [compressedBuffer, hash] = await Promise.all([
+        this.compressImage(file.buffer),
+        this.generateHash(file.buffer),
+      ]);
+
+      return this.saveFile({
+        buffer: compressedBuffer,
+        originalName: file.originalname,
+        ext: '.webp',
+      });
+    } catch (error) {
+      if (error instanceof Error && /Invalid input/i.test(error.message)) {
+        this.logger.warn(`非图片文件处理: ${file.originalname}`);
+        return this.saveOriginalFile(file);
+      }
+      throw error;
+    }
+  }
+
+  private async compressImage(buffer: Buffer): Promise<Buffer> {
+    return sharp(buffer)
+      .resize({
+        width: CONFIG.MAX_WIDTH,
+        withoutEnlargement: true,
+        fastShrinkOnLoad: true,
+      })
+      .rotate()
+      .toFormat('webp', CONFIG.COMPRESS.webp) // 新增此行
+      .toBuffer();
+  }
+
+  private async generateHash(buffer: Buffer): Promise<string> {
+    return crypto.createHash('sha256').update(buffer).digest('hex');
+  }
+
+  private async saveFile(params: {
+    buffer: Buffer;
+    originalName: string;
+    ext: string;
+  }): Promise<Upload> {
+    const { buffer, originalName, ext } = params;
+    const hash = await this.generateHash(buffer);
+    const finalExt = ext || path.extname(originalName);
+    const key = `${hash}${finalExt}`;
+    const filePath = path.join(CONFIG.UPLOAD_DIR, key);
+
+    const [upload] = await Promise.all([
+      this.uploadRepository.save({
+        hash,
+        key,
+        url: `/uploads/${key}`,
+      }),
+      fs.writeFile(filePath, buffer),
+    ]);
+
+    return upload;
+  }
+
+  private async saveOriginalFile(file: Express.Multer.File): Promise<Upload> {
+    return this.saveFile({
+      buffer: file.buffer,
+      originalName: file.originalname,
+      ext: path.extname(file.originalname),
+    });
+  }
+
+  private async handleError(
+    error: Error,
+    file: Express.Multer.File,
+  ): Promise<Upload> {
+    if (error.message.includes('Invalid input')) {
+      return this.saveOriginalFile(file);
+    }
+
+    try {
+      return await this.saveOriginalFile(file);
+    } catch (fallbackError) {
+      this.logger.error('回退方案失败', fallbackError.stack);
+      throw new Error('文件处理失败');
+    }
+  }
+
+  async getFiles(page = 1, limit = 10) {
     const skip = (page - 1) * limit;
     const [items, total] = await this.uploadRepository.findAndCount({
       skip,
