@@ -1,68 +1,59 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux'; // 引入 useDispatch
-import { login as loginAction } from '../../store'; // 引入 login action
-import { Form, Input, Button, Card, message } from 'antd';
+import { useDispatch } from 'react-redux';
+import { login as loginAction } from '../../store';
+import { Form, Input, Button, Card, message, Tabs } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { userApi } from '../../services/api.js'; // 引入 userApi
+import { userApi } from '../../services/api.js';
 import './index.css';
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('login');
   const navigate = useNavigate();
-  const dispatch = useDispatch(); // 获取 dispatch 函数
+  const dispatch = useDispatch();
+  const [loginForm] = Form.useForm();
+  const [registerForm] = Form.useForm();
 
   // 处理登录
   const handleLogin = async (values) => {
     setLoading(true);
     try {
-      // 将表单字段名映射到 API 期望的字段名
-      const apiPayload = {
-        adminName: values.username, // 更新字段名为 adminName
-        adminPassword: values.password, // 更新字段名为 adminPassword
-      };
-      const response = await userApi.login(apiPayload); // 调用实际的登录 API
-      console.log('Login response:', response); // 打印 API 响应
-      // 根据新的响应体结构检查登录是否成功并获取 token
+      const response = await userApi.login({
+        adminName: values.username,
+        adminPassword: values.password,
+      });
+      
       if (response && response.success && response.data && response.data.access_token) {
-        const { access_token, adminId } = response.data; // 获取token和管理员ID
+        const { access_token, adminId } = response.data;
         
         try {
-          // 获取管理员详细信息
           const adminInfoResponse = await userApi.getAdminInfo(adminId);
           if (adminInfoResponse && adminInfoResponse.success && adminInfoResponse.data) {
-            // 派发 login action，包含完整的管理员信息和token
             const adminData = adminInfoResponse.data;
             dispatch(loginAction({ 
               ...adminData, 
               access_token 
             }));
-            console.log('Login successful with admin details:', adminData);
-            message.success(response.message || '登录成功'); // 使用 API 返回的 message
-            navigate('/dashboard'); // 登录成功后跳转到仪表盘
+            message.success(response.message || '登录成功');
+            navigate('/dashboard');
           } else {
-            // 如果获取详情失败，仍然使用基本信息登录
             const { access_token, ...userData } = response.data;
             dispatch(loginAction({ ...userData, access_token }));
-            console.log('Login successful with basic info:', userData);
             message.success(response.message || '登录成功，但获取详细信息失败');
             navigate('/dashboard');
           }
         } catch (detailError) {
-          // 如果获取详情出错，仍然使用基本信息登录
           console.error('获取管理员详情失败:', detailError);
           const { access_token, ...userData } = response.data;
           dispatch(loginAction({ ...userData, access_token }));
-          console.log('Login successful with basic info:', userData);
           message.success(response.message || '登录成功，但获取详细信息失败');
           navigate('/dashboard');
         }
       } else {
-        // 处理 API 返回但登录失败的情况 (e.g., success: false, or missing token)
         message.error(response?.message || '登录失败，请检查用户名或密码');
       }
     } catch (error) {
-      // 处理 API 请求错误
       console.error('Login failed:', error);
       message.error(error?.response?.data?.message || '登录请求失败，请稍后重试');
     } finally {
@@ -70,38 +61,136 @@ const Login = () => {
     }
   };
 
-  return (
-    <div className="login-container">
-      <Card className="login-card" title="审核管理系统登录">
+  // 处理注册
+  const handleRegister = async (values) => {
+    setLoading(true);
+    try {
+      const response = await userApi.register({
+        adminName: values.username,
+        adminPassword: values.password,
+        adminPasswordConfirm: values.confirmPassword,
+      });
+      
+      if (response && response.success) {
+        message.success('注册成功，请登录');
+        setActiveTab('login');
+        registerForm.resetFields();
+        loginForm.setFieldsValue({ username: values.username });
+      } else {
+        message.error(response?.message || '注册失败');
+      }
+    } catch (error) {
+      console.error('Register failed:', error);
+      message.error(error?.response?.data?.message || '注册请求失败，请稍后重试');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const items = [
+    {
+      key: 'login',
+      label: '登录',
+      children: (
         <Form
-          name="normal_login"
+          form={loginForm}
+          name="login"
           className="login-form"
-          initialValues={{ remember: true }}
           onFinish={handleLogin}
         >
           <Form.Item
-            name="username" // 保持表单项 name 不变，仅修改提交时的字段名
+            name="username"
             rules={[{ required: true, message: '请输入用户名!' }]}
           >
-            <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="用户名 (admin)" />
+            <Input prefix={<UserOutlined />} placeholder="用户名" />
           </Form.Item>
           <Form.Item
-            name="password" // 保持表单项 name 不变，仅修改提交时的字段名
+            name="password"
             rules={[{ required: true, message: '请输入密码!' }]}
           >
-            <Input
-              prefix={<LockOutlined className="site-form-item-icon" />}
-              type="password"
-              placeholder="密码 (admin)"
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="密码"
             />
           </Form.Item>
-
           <Form.Item>
             <Button type="primary" htmlType="submit" className="login-form-button" loading={loading}>
               登录
             </Button>
           </Form.Item>
         </Form>
+      ),
+    },
+    {
+      key: 'register',
+      label: '注册',
+      children: (
+        <Form
+          form={registerForm}
+          name="register"
+          className="login-form"
+          onFinish={handleRegister}
+        >
+          <Form.Item
+            name="username"
+            rules={[
+              { required: true, message: '请输入用户名!' },
+              { min: 4, message: '用户名至少4个字符!' }
+            ]}
+          >
+            <Input prefix={<UserOutlined />} placeholder="用户名" />
+          </Form.Item>
+          <Form.Item
+            name="password"
+            rules={[
+              { required: true, message: '请输入密码!' },
+              { min: 6, message: '密码至少6个字符!' }
+            ]}
+          >
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="密码"
+            />
+          </Form.Item>
+          <Form.Item
+            name="confirmPassword"
+            dependencies={['password']}
+            rules={[
+              { required: true, message: '请确认密码!' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('password') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('两次输入的密码不一致!'));
+                },
+              }),
+            ]}
+          >
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="确认密码"
+            />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" className="login-form-button" loading={loading}>
+              注册
+            </Button>
+          </Form.Item>
+        </Form>
+      ),
+    },
+  ];
+
+  return (
+    <div className="login-container">
+      <Card className="login-card" title="审核管理系统">
+        <Tabs
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          items={items}
+          centered
+        />
       </Card>
     </div>
   );

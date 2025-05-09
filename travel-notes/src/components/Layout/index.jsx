@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Layout, Menu, Avatar, Dropdown, theme } from 'antd';
+import { Layout, Menu, Avatar, Dropdown, theme, Modal, Descriptions, Tag, Button, Form, Input, Select, message } from 'antd';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { setUser } from '../../store';
+import { userApi } from '../../services/api';
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -8,14 +11,21 @@ import {
   UserOutlined,
   AuditOutlined,
   LogoutOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
 
 const { Header, Sider, Content } = Layout;
+const { Option } = Select;
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [userModalVisible, setUserModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [form] = Form.useForm();
   const navigate = useNavigate();
   const location = useLocation();
+  const user = useSelector((state) => state.auth.user);
+  const dispatch = useDispatch();
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -24,8 +34,6 @@ const MainLayout = () => {
   const getSelectedKey = () => {
     const path = location.pathname;
     if (path.includes('/dashboard')) return ['dashboard'];
-    if (path.includes('/users')) return ['users'];
-    if (path.includes('/admins')) return ['admins'];
     if (path.includes('/reviews')) return ['reviews'];
     return ['dashboard'];
   };
@@ -35,21 +43,49 @@ const MainLayout = () => {
     navigate(`/${key}`);
   };
 
-  // 用户菜单项
-  const userMenuItems = [
-    {
-      key: 'logout',
-      icon: <LogoutOutlined />,
-      label: '退出登录',
-    },
-  ];
+  // 处理用户头像点击
+  const handleUserClick = () => {
+    setUserModalVisible(true);
+  };
 
-  // 处理用户菜单点击
-  const handleUserMenuClick = ({ key }) => {
-    if (key === 'logout') {
-      // 清除登录信息
-      localStorage.removeItem('token');
-      navigate('/login');
+  // 处理退出登录
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userData');
+    navigate('/login');
+  };
+
+  // 处理编辑按钮点击
+  const handleEditClick = () => {
+    form.setFieldsValue({
+      adminName: user?.adminName,
+      adminAuth: user?.adminAuth,
+      adminPassword: '',
+    });
+    setEditModalVisible(true);
+  };
+
+  // 处理编辑表单提交
+  const handleEditSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      const response = await userApi.updateAdmin(user?.adminId, values);
+      
+      if (response && response.success) {
+        message.success('更新成功');
+        // 更新 Redux 中的用户信息
+        dispatch(setUser({
+          ...user,
+          ...values,
+        }));
+        setEditModalVisible(false);
+        setUserModalVisible(false);
+      } else {
+        message.error(response?.message || '更新失败');
+      }
+    } catch (error) {
+      console.error('更新用户信息失败:', error);
+      message.error(error?.response?.data?.message || '更新失败，请稍后重试');
     }
   };
 
@@ -98,11 +134,6 @@ const MainLayout = () => {
                 label: '仪表盘',
               },
               {
-                key: 'admins',
-                icon: <UserOutlined />,
-                label: '管理员管理',
-              },
-              {
                 key: 'reviews',
                 icon: <AuditOutlined />,
                 label: '审核管理',
@@ -111,32 +142,114 @@ const MainLayout = () => {
           />
         </div>
         <div style={{ marginRight: 24 }}>
-          <Dropdown
-            menu={{
-              items: userMenuItems,
-              onClick: handleUserMenuClick,
-            }}
-            placement="bottomRight"
+          <div 
+            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            onClick={handleUserClick}
           >
-            <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-              <Avatar icon={<UserOutlined />} />
-              <span style={{ marginLeft: 8 }}>管理员</span>
-            </div>
-          </Dropdown>
+            <Avatar icon={<UserOutlined />} />
+            <span style={{ marginLeft: 8 }}>{user?.adminName || '管理员'}</span>
+          </div>
         </div>
       </Header>
-      <Content
-        style={{
-          margin: '88px 0 24px',
-          padding: 24,
-          minHeight: 280,
-          background: colorBgContainer,
-          borderRadius: borderRadiusLG,
-          width: '100%',
-        }}
+
+      {/* 用户信息弹窗 */}
+      <Modal
+        title="用户信息"
+        open={userModalVisible}
+        onCancel={() => setUserModalVisible(false)}
+        footer={[
+          <Button 
+            key="edit" 
+            type="primary" 
+            icon={<EditOutlined />}
+            onClick={handleEditClick}
+          >
+            修改信息
+          </Button>,
+          <Button 
+            key="logout" 
+            type="primary" 
+            danger 
+            icon={<LogoutOutlined />}
+            onClick={handleLogout}
+          >
+            退出登录
+          </Button>
+        ]}
       >
-        <Outlet />
-      </Content>
+        <Descriptions bordered column={1}>
+          <Descriptions.Item label="用户名">{user?.adminName}</Descriptions.Item>
+          <Descriptions.Item label="权限">
+            {user?.adminAuth === 0 ? (
+              <Tag color="blue">审核人员</Tag>
+            ) : user?.adminAuth === 1 ? (
+              <Tag color="green">管理人员</Tag>
+            ) : (
+              <Tag color="default">未知权限</Tag>
+            )}
+          </Descriptions.Item>
+        </Descriptions>
+      </Modal>
+
+      {/* 编辑用户信息弹窗 */}
+      <Modal
+        title="修改用户信息"
+        open={editModalVisible}
+        onOk={handleEditSubmit}
+        onCancel={() => setEditModalVisible(false)}
+        okText="保存"
+        cancelText="取消"
+      >
+        <Form
+          form={form}
+          layout="vertical"
+        >
+          <Form.Item
+            name="adminName"
+            label="用户名"
+            rules={[
+              { required: true, message: '请输入用户名' },
+              { min: 4, message: '用户名至少4个字符' }
+            ]}
+          >
+            <Input placeholder="请输入用户名" />
+          </Form.Item>
+          <Form.Item
+            name="adminAuth"
+            label="权限"
+            rules={[{ required: true, message: '请选择权限' }]}
+          >
+            <Select placeholder="请选择权限">
+              <Option value={0}>审核人员</Option>
+              <Option value={1}>管理人员</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="adminPassword"
+            label="密码"
+            rules={[
+              { required: true, message: '请输入密码' },
+              { min: 6, message: '密码至少6个字符' }
+            ]}
+          >
+            <Input.Password placeholder="请输入新密码" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Layout style={{ marginTop: 64 }}>
+        <Content
+          style={{
+            margin: '24px 16px',
+            padding: 24,
+            minHeight: 280,
+            background: colorBgContainer,
+            borderRadius: borderRadiusLG,
+          }}
+        >
+          <Outlet />
+        </Content>
+      </Layout>
     </Layout>
   );
 };

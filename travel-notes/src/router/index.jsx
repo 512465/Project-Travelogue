@@ -2,20 +2,20 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Login from '../pages/Login';
 import Dashboard from '../pages/Dashboard';
-import UserManagement from '../pages/UserManagement';
-import AdminManagement from '../pages/AdminManagement';
 import ReviewList from '../pages/ReviewList';
 import ReviewDetail from '../pages/ReviewDetail';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 // 路由配置
 const router = createBrowserRouter([
   {
     path: '/login',
     element: <Login />,
+    errorElement: <ErrorBoundary><Login /></ErrorBoundary>,
   },
   {
     path: '/',
-    element: <Layout />,
+    element: <ErrorBoundary><Layout /></ErrorBoundary>,
     children: [
       {
         path: '',
@@ -23,23 +23,15 @@ const router = createBrowserRouter([
       },
       {
         path: 'dashboard',
-        element: <Dashboard />,
-      },
-      {
-        path: 'users',
-        element: <UserManagement />,
-      },
-      {
-        path: 'admins',
-        element: <AdminManagement />,
+        element: <ErrorBoundary><Dashboard /></ErrorBoundary>,
       },
       {
         path: 'reviews',
-        element: <ReviewList />,
+        element: <ErrorBoundary><ReviewList /></ErrorBoundary>,
       },
       {
         path: 'reviews/:id',
-        element: <ReviewDetail />,
+        element: <ErrorBoundary><ReviewDetail /></ErrorBoundary>,
       },
     ],
   },

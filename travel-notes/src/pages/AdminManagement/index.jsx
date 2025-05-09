@@ -25,27 +25,16 @@ const AdminManagement = () => {
       const response = await userApi.getAdminList();
       if (response && response.success) {
         // 确保数据是数组类型
-        if (response.data && Array.isArray(response.data)) {
-          setAdmins(response.data);
-        } else if (response.data && response.data.items && Array.isArray(response.data.items)) {
-          // 处理可能的分页数据结构 {items: [], total: number}
-          setAdmins(response.data.items);
-        } else if (response.data) {
-          // 尝试将非数组数据转换为数组
-          console.warn('API返回的数据不是标准数组格式，尝试转换:', response.data);
-          const dataArray = [].concat(response.data);
-          setAdmins(dataArray);
-        } else {
-          console.error('API返回的数据结构无法处理:', response.data);
-          setAdmins([]); // 设置为空数组
-        }
+        const adminList = Array.isArray(response.data) ? response.data : 
+                         (response.data?.items ? response.data.items : []);
+        setAdmins(adminList);
       } else {
-        setAdmins([]); // 设置为空数组
+        setAdmins([]);
         message.error(response?.message || '获取管理员列表失败');
       }
     } catch (error) {
       console.error('获取管理员列表失败:', error);
-      setAdmins([]); // 设置为空数组
+      setAdmins([]);
       message.error(error?.response?.data?.message || '获取管理员列表请求失败');
     } finally {
       setLoading(false);
@@ -106,7 +95,7 @@ const AdminManagement = () => {
           const response = await userApi.deleteAdmin(adminId);
           if (response && response.success) {
             message.success('删除成功');
-            fetchAdminList(); // 刷新列表
+            fetchAdminList();
           } else {
             message.error(response?.message || '删除管理员失败');
           }
@@ -123,12 +112,11 @@ const AdminManagement = () => {
     try {
       const values = await form.validateFields();
       if (currentAdmin) {
-        // 更新管理员
         const response = await userApi.updateAdmin(currentAdmin.adminId, values);
         if (response && response.success) {
           message.success('更新成功');
           setModalVisible(false);
-          fetchAdminList(); // 刷新列表
+          fetchAdminList();
         } else {
           message.error(response?.message || '更新管理员失败');
         }
@@ -136,10 +124,8 @@ const AdminManagement = () => {
     } catch (error) {
       console.error('表单验证或提交失败:', error);
       if (error.errorFields) {
-        // 表单验证错误
         message.error('请检查表单填写是否正确');
       } else {
-        // API请求错误
         message.error(error?.response?.data?.message || '更新管理员请求失败');
       }
     }
