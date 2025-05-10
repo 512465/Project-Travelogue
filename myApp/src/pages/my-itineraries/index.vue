@@ -1,11 +1,12 @@
 <template>
-  <view class="container" v-if="!userStore.token">
+  <view style="background-image: url('../../assets/2020031921552395638.jpg');" class="container"
+    v-if="!userStore.token">
     <view class="header">
       <text>登录开启旅程</text>
       <Button class="login-btn" @tap="handleClick">登录/注册</Button>
     </view>
   </view>
-  <view class="page-container" v-else>
+  <view style="background-image: url('../../assets/2020031921552395638.jpg');" class="page-container" v-else>
     <!-- 头部区域 -->
     <view class="headerMain">
       <image class="avatar" :src="avatar" mode="aspectFill" @tap="handleUpdateAvatar" />
@@ -33,11 +34,6 @@
           退出登录
         </button>
       </view>
-    </view>
-
-    <!-- 底部信息 -->
-    <view class="footer">
-      <text>欢迎来到旅行日记</text>
     </view>
   </view>
 </template>
@@ -166,7 +162,6 @@ const uploadFile = async (file) => {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(to bottom, #4a90e2, #1a73e8);
   padding: 20px;
 }
 
@@ -176,38 +171,26 @@ const uploadFile = async (file) => {
   padding: 20px;
   text-align: center;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
   width: 90%;
   max-width: 400px;
 
-  .login-btn,
-  .check-order {
-    margin-top: 10px;
-    padding: 10px 20px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
   .login-btn {
-    background-color: #ff9800;
-    color: white;
+    margin-top: 10px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    background-color: #ffffff;
+    color: #ff6d00;
+    font-weight: bold;
+    font-size: 30rpx;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.3);
 
-    &:hover {
-      background-color: #ff6d00;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-  }
-
-  .check-order {
-    background-color: transparent;
-    border: 1px solid white;
-    color: white;
-
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.2);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    &:active {
+      background-color: #fff3e0;
+      transform: scale(0.96);
+      color: #e65100;
     }
   }
 }
@@ -216,12 +199,10 @@ const uploadFile = async (file) => {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #f5f5f5;
 }
 
 .headerMain {
   padding: 60rpx 40rpx;
-  background-color: #4a90e2;
   display: flex;
   align-items: center;
 
@@ -231,11 +212,18 @@ const uploadFile = async (file) => {
     border-radius: 50%;
     border: 4rpx solid #fff;
     margin-right: 40rpx;
+    box-shadow: 0 6rpx 12rpx rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+
+    &:active {
+      transform: scale(1.05);
+    }
   }
 
   .username {
     color: #fff;
-    font-size: 36rpx;
+    font-size: 60rpx;
+    font-weight: 700;
     font-weight: bold;
   }
 }
@@ -255,18 +243,19 @@ const uploadFile = async (file) => {
 }
 
 .menu-card {
-  background: #fff;
-  border-radius: 16rpx;
+  // background: linear-gradient(to right, #ff9800, #ffa600);
+  border-radius: 20rpx;
   padding: 40rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
-  transition: all 0.3s;
+  box-shadow: 0 6rpx 12rpx rgba(0, 0, 0, 0.8);
+  transition: all 0.3s ease;
 
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.97);
     opacity: 0.9;
+    box-shadow: 0 3rpx 6rpx rgba(0, 0, 0, 0.1);
   }
 
   .card-icon {
@@ -277,7 +266,8 @@ const uploadFile = async (file) => {
 
   .card-text {
     font-size: 32rpx;
-    color: #333;
+    color: #fff;
+    font-weight: 500;
   }
 }
 
@@ -289,13 +279,21 @@ const uploadFile = async (file) => {
     width: 100%;
     height: 100rpx;
     line-height: 100rpx;
-    background: #fff;
+    background: linear-gradient(to right, #ff4d4f, #ff7875);
     border-radius: 16rpx;
-    color: #ff4d4f;
+    color: #fff;
     font-size: 32rpx;
+    font-weight: bold;
+    box-shadow: 0 6rpx 12rpx rgba(255, 77, 79, 0.3);
+    transition: all 0.3s ease;
 
     &::after {
       border: none;
+    }
+
+    &:active {
+      opacity: 0.9;
+      transform: scale(0.98);
     }
 
     .iconfont {
@@ -303,13 +301,5 @@ const uploadFile = async (file) => {
       font-size: 40rpx;
     }
   }
-}
-
-.footer {
-  text-align: center;
-  padding: 40rpx;
-  color: #666;
-  font-size: 28rpx;
-  background-color: #fff;
 }
 </style>
