@@ -48,6 +48,8 @@
         </view>
       </view>
     </view>
+    <view v-if="loading" class="loading">加载中...</view>
+    <view v-if="!hasMore" class="loading">没有更多数据了</view>
   </view>
   <view v-else class="empty">
     <view class="empty-content">
@@ -82,7 +84,8 @@ const getTravelogs = async (isRefresh = false) => {
   }
 
   const res = await getTravelDetail({ page, limit: 5 })
-  const items = res.data.data.items.map((item) => {
+  console.log(res)
+  const items = res.data.items.map((item) => {
     return {
       ...item,
       type: isImage(item.travelogueCover)
@@ -320,5 +323,11 @@ useReachBottom(() => {
     font-size: 28px;
     color: #999;
   }
+}
+
+.loading {
+  padding: 40rpx 0;
+  color: #999;
+  text-align: center;
 }
 </style>

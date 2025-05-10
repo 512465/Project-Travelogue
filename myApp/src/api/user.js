@@ -16,7 +16,7 @@ export const updateUserAvatar = (avatar) => patch(`/api/user/avatar`, { avatar }
 // 获取个人游记详情
 export const getTravelDetail = (data) => {
   const { page, limit, travelogueStatus, } = data;
-  let url = `/api/travelogue/list?page=${page}&limit=${limit}`;
+  let url = `/api/travelogue?page=${page}&limit=${limit}`;
   // 如果传入了 travelogueStatus，加入 URL 中
   if (travelogueStatus !== null && travelogueStatus !== undefined) {
     url += `&travelogueStatus=${travelogueStatus}`;
