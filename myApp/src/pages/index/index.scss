@@ -243,3 +243,9 @@ video.item-image {
   display: flex;
   align-items: center;
 }
+
+.fixed-height {
+  height: 400px;
+  position: relative;
+  overflow: hidden;
+}

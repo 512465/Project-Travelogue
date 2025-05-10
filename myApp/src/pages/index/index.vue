@@ -9,11 +9,7 @@
       <view class="waterfall-column-left" id="leftColumn">
         <view v-for="(item, index) in leftItems" :key="item.travelogueId" class="waterfall-item"
               @tap="gotoDetail(item.travelogueId)">
-          <view v-if="item.isImage" class="item-image-wrapper" :style="{
-            paddingBottom: (item.travelogueCoverHeight && item.travelogueCoverWidth)
-              ? (item.travelogueCoverHeight / item.travelogueCoverWidth * 100) + '%'
-              : '100%'
-          }">
+          <view v-if="item.isImage" class="item-image-wrapper fixed-height">
             <image :src="item.travelogueCover" class="item-image" mode="aspectFill" />
           </view>
 
@@ -41,11 +37,7 @@
       <view class="waterfall-column-right" id="rightColumn">
         <view v-for="(item, index) in rightItems" :key="item.travelogueId" class="waterfall-item"
               @tap="gotoDetail(item.travelogueId)">
-          <view v-if="item.isImage" class="item-image-wrapper" :style="{
-            paddingBottom: (item.travelogueCoverHeight && item.travelogueCoverWidth)
-              ? (item.travelogueCoverHeight / item.travelogueCoverWidth * 100) + '%'
-              : '100%'
-          }">
+          <view v-if="item.isImage" class="item-image-wrapper fixed-height">
             <image :src="item.travelogueCover" class="item-image" mode="aspectFill" />
           </view>
 
@@ -106,44 +98,6 @@ const gotoDetail = (travelogueId) => {
     url: `/pages/travelDetail/index?id=${travelogueId}`
   })
 }
-// 缓存图片尺寸
-const getImageSize = async (url) => {
-  if (!url) return { width: 1, height: 1 }
-
-  if (imageSizeCache.has(url)) {
-    return imageSizeCache.get(url)
-  }
-
-  try {
-    const res = await Taro.getImageInfo({ src: url })
-    const size = { width: res.width, height: res.height }
-    imageSizeCache.set(url, size)
-    return size
-  } catch (e) {
-    console.warn('图片获取失败', url)
-    const fallback = { width: 1, height: 1 }
-    imageSizeCache.set(url, fallback)
-    return fallback
-  }
-}
-
-const cacheImageSizes = async (items) => {
-  const sizePromises = items.map(async (item) => {
-    item.isImage = isImage(item.travelogueCover)
-    if (item.isImage && item.travelogueCover) {
-      // 获取图片尺寸并缓存
-      const size = await getImageSize(item.travelogueCover);
-      item.travelogueCoverWidth = size.width;
-      item.travelogueCoverHeight = size.height;
-    } else {
-      item.travelogueCoverWidth = 1;
-      item.travelogueCoverHeight = 1;
-    }
-  });
-
-  await Promise.all(sizePromises);
-}
-
 
 
 // 获取列高度
@@ -197,9 +151,13 @@ const loadTravelCards = async (isRefresh = false) => {
   }
 
   const res = await getTravelogs({ page, limit: 10 })
-  const items = res.data.items || []
-  // 缓存图片尺寸
-  await cacheImageSizes(items);
+  const items = res.data.items.map((item) => {
+    return {
+      ...item,
+      isImage: isImage(item.travelogueCover)
+    }
+  }) || []
+
   console.log('items', items)
 
   if (isRefresh) {
@@ -225,9 +183,6 @@ const performSearch = async () => {
     const res = await searchTravelogs(searchQuery.value)
     const items = res.data.items || []
 
-    // 缓存图片尺寸
-    await cacheImageSizes(items);
-    console.log('items', items)
     travelCards.value = items || []
 
     if (items.length < 10) hasMore.value = false
