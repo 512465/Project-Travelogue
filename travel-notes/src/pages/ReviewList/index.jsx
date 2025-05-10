@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Table, Button, Input, Select, DatePicker, Space, Typography, message } from 'antd';
-import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
+import { Table, Button, Input, Select, DatePicker, Space, Typography, message, Modal } from 'antd';
+import { SearchOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import StatusTag from '../../components/StatusTag';
 import ReviewActions from '../../components/ReviewActions';
 import DeleteButton from '../../components/DeleteButton';
@@ -14,6 +14,10 @@ const { Option } = Select;
 const ReviewList = () => {
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [rejectModalVisible, setRejectModalVisible] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
+  const [batchLoading, setBatchLoading] = useState(false);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useState({
     keyword: '',
@@ -22,8 +26,6 @@ const ReviewList = () => {
     limit: 10, // 或者其他默认分页大小
   });
   const [total, setTotal] = useState(0);
-
-
 
   const fetchTravelogueData = async (params = searchParams) => {
     setLoading(true);
@@ -177,8 +179,6 @@ const ReviewList = () => {
     },
   ];
 
-
-
   // 处理搜索参数变化
   const handleSearchChange = (key, value) => {
     setSearchParams(prev => ({
@@ -212,6 +212,75 @@ const ReviewList = () => {
     fetchTravelogueData(newParams);
   };
 
+  // 处理批量审核通过
+  const handleBatchApprove = async () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning('请选择要审核的游记');
+      return;
+    }
+
+    setBatchLoading(true);
+    try {
+      const promises = selectedRowKeys.map(id => 
+        travelogueApi.updateTravelogueStatus(id, { travelogueStatus: 1 })
+      );
+      await Promise.all(promises);
+      message.success('批量审核通过成功');
+      setSelectedRowKeys([]);
+      fetchTravelogueData();
+    } catch (error) {
+      console.error('批量审核通过失败:', error);
+      message.error(error?.response?.data?.message || '批量审核通过失败');
+    } finally {
+      setBatchLoading(false);
+    }
+  };
+
+  // 处理批量拒绝
+  const handleBatchReject = async () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning('请选择要审核的游记');
+      return;
+    }
+
+    if (!rejectReason.trim()) {
+      message.warning('请输入拒绝理由');
+      return;
+    }
+
+    setBatchLoading(true);
+    try {
+      const promises = selectedRowKeys.map(id => 
+        travelogueApi.updateTravelogueStatus(id, { 
+          travelogueStatus: -1,
+          travelogueRejectReason: rejectReason.trim()
+        })
+      );
+      await Promise.all(promises);
+      message.success('批量拒绝成功');
+      setSelectedRowKeys([]);
+      setRejectModalVisible(false);
+      setRejectReason('');
+      fetchTravelogueData();
+    } catch (error) {
+      console.error('批量拒绝失败:', error);
+      message.error(error?.response?.data?.message || '批量拒绝失败');
+    } finally {
+      setBatchLoading(false);
+    }
+  };
+
+  // 表格行选择配置
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
+    getCheckboxProps: (record) => ({
+      disabled: record.status !== 0, // 只有待审核状态的游记可以被选择
+    }),
+  };
+
   return (
     <div style={{ width: '100%', padding: '20px', maxWidth: '100%', boxSizing: 'border-box' }}>
       <Title level={2}>游记审核管理</Title>
@@ -243,7 +312,34 @@ const ReviewList = () => {
         </Space>
       </div>
 
+      {selectedRowKeys.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <Space>
+            <Button
+              type="primary"
+              icon={<CheckCircleOutlined />}
+              onClick={handleBatchApprove}
+              loading={batchLoading}
+            >
+              批量通过
+            </Button>
+            <Button
+              danger
+              icon={<CloseCircleOutlined />}
+              onClick={() => setRejectModalVisible(true)}
+              loading={batchLoading}
+            >
+              批量拒绝
+            </Button>
+            <span style={{ marginLeft: 8 }}>
+              已选择 {selectedRowKeys.length} 项
+            </span>
+          </Space>
+        </div>
+      )}
+
       <Table
+        rowSelection={rowSelection}
         columns={columns}
         dataSource={reviews}
         rowKey="id"
@@ -259,6 +355,27 @@ const ReviewList = () => {
         style={{ width: '100%' }}
         scroll={{ x: 'max-content' }}
       />
+
+      <Modal
+        title="批量拒绝"
+        open={rejectModalVisible}
+        onOk={handleBatchReject}
+        onCancel={() => {
+          setRejectModalVisible(false);
+          setRejectReason('');
+        }}
+        confirmLoading={batchLoading}
+      >
+        <div>
+          <p>请输入拒绝理由：</p>
+          <Input.TextArea
+            rows={4}
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            placeholder="请输入拒绝理由"
+          />
+        </div>
+      </Modal>
     </div>
   );
 };
