@@ -27,7 +27,7 @@
                 <video :src="item.url" id="myVideo" controls class="slide-image" />
               </view>
               <view v-else @tap="viewImage(item.url)">
-                <image :src="item.url" class="slide-image" />
+                <image :src="item.url" class="slide-image"/>
               </view>
             </swiper-item>
           </swiper>
