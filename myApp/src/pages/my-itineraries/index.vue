@@ -1,12 +1,13 @@
 <template>
-  <view style="background-image: url('../../assets/2020031921552395638.jpg');" class="container"
-    v-if="!userStore.token">
+  <view
+    style="background-image: url('https://wl.wanghun.dpdns.org/uploads/2020031921552395638.jpg');"
+    class="container" v-if="!userStore.token">
     <view class="header">
       <text>登录开启旅程</text>
       <Button class="login-btn" @tap="handleClick">登录/注册</Button>
     </view>
   </view>
-  <view style="background-image: url('../../assets/2020031921552395638.jpg');" class="page-container" v-else>
+  <view style="background-image: url('https://wl.wanghun.dpdns.org/uploads/2020031921552395638.jpg');" class="page-container" v-else>
     <!-- 头部区域 -->
     <view class="headerMain">
       <image class="avatar" :src="avatar" mode="aspectFill" @tap="handleUpdateAvatar" />

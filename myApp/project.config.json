@@ -2,20 +2,20 @@
   "miniprogramRoot": "dist/",
   "projectname": "myApp",
   "description": "demo",
-  "appid": "wx4eebf4db00a4a3b6",
+  "appid": "wx4798e1f24f519dab",
   "setting": {
     "urlCheck": true,
     "es6": false,
     "enhance": false,
     "compileHotReLoad": false,
-    "postcss": false,
-    "minified": false,
+    "postcss": true,
+    "minified": true,
     "babelSetting": {
       "ignore": [],
       "disablePlugins": [],
       "outputPath": ""
     },
-    "minifyWXSS": false,
+    "minifyWXSS": true,
     "minifyWXML": false,
     "ignoreUploadUnusedFiles": false
   },
