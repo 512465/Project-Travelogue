@@ -261,7 +261,21 @@ export class TravelogueService {
         items.push(travelogue); // 将游记对象添加到结果数组中
       }
     }
-    return items;
+    const filteredItems = items.map((item) => {
+      const {
+        travelogueRejectReason,
+        travelogueImages,
+        updateTime,
+        createTime,
+        travelogueLikes,
+        travelogueCollects,
+        travelogueAuthor,
+        userAvatar,
+        ...rest
+      } = item; // 解构出不需要的字段
+      return rest; // 返回过滤后的对象
+    });
+    return filteredItems;
   }
 
   async update(
