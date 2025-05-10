@@ -102,8 +102,6 @@ const handleUpdateAvatar = () => {
     mediaType: ['image'],
     sourceType: ['album', 'camera'],
     success: (res) => {
-      // const tempFilePath = res.tempFiles[0].tempFilePath
-      // userStore.updateAvatar(tempFilePath)
       uploadFile(res.tempFiles[0])
       console.log(res)
     }
@@ -243,7 +241,6 @@ const uploadFile = async (file) => {
 }
 
 .menu-card {
-  // background: linear-gradient(to right, #ff9800, #ffa600);
   border-radius: 20rpx;
   padding: 40rpx;
   display: flex;
