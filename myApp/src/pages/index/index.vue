@@ -4,7 +4,10 @@
       <AtSearchBar @clear="onClear" v-model:value="searchQuery" placeholder="搜索游记标题或作者昵称"
                    @action-click="debouncedSearch" />
     </view>
-    <view class="waterfall-container">
+    <view v-if="skeletonLoading" class="skeleton-wrapper">
+      <at-skeleton :types="{ 'card-6': 'card@6' }" type="card-6" />
+    </view>
+    <view v-else class="waterfall-container">
       <!-- 左列 -->
       <view class="waterfall-column-left" id="leftColumn">
         <view v-for="(item, index) in leftItems" :key="item.travelogueId" class="waterfall-item"
@@ -33,7 +36,6 @@
         </view>
       </view>
 
-      <!-- 右列 -->
       <view class="waterfall-column-right" id="rightColumn">
         <view v-for="(item, index) in rightItems" :key="item.travelogueId" class="waterfall-item"
               @tap="gotoDetail(item.travelogueId)">
@@ -61,6 +63,7 @@
         </view>
       </view>
     </view>
+
     <view v-if="loading" class="loading">加载中...</view>
     <view v-if="!hasMore" class="loading">没有更多数据了</view>
   </view>
@@ -74,6 +77,7 @@ import Taro, { usePullDownRefresh, useReachBottom } from '@tarojs/taro'
 import { getTravelogs, searchTravelogs } from '../../api/travelogue.js'
 import loadingImg from '../../assets/loading.gif'
 import errorImg from '../../assets/error.jpg'
+import { AtSkeleton } from 'taro-ui-vue3'
 
 const travelCards = ref([])
 const searchQuery = ref('')
@@ -86,6 +90,12 @@ const leftItems = ref([])
 const rightItems = ref([])
 const defaultAvatar = 'https://img.soogif.com/esrLXK1tXYDebZBHAKgmGx58EZd1smzH.jpeg_s400x0'
 const errorImage = errorImg
+const skeletonLoading = ref(true)
+
+const skeletonTypes = {
+  'two-column-cards': 'row[col[card@3], col[card@3]]'
+}
+
 
 // 判断是否为图片
 const isImage = (url) => {
@@ -148,6 +158,7 @@ const loadTravelCards = async (isRefresh = false) => {
     travelCards.value = []
     leftItems.value = []
     rightItems.value = []
+    skeletonLoading.value = true
   }
 
   const res = await getTravelogs({ page, limit: 10 })
@@ -160,6 +171,7 @@ const loadTravelCards = async (isRefresh = false) => {
 
   console.log('items', items)
 
+  skeletonLoading.value = false
   if (isRefresh) {
     travelCards.value = items
   } else {
