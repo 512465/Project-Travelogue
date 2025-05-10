@@ -24,7 +24,7 @@
             <text class="item-title">{{ item.travelogueTitle }}</text>
             <view class="user-info">
               <view class="avatar-wrapper">
-                <image class="avatar" :src="'http://43.131.235.203:8586' + item.userAvatar || defaultAvatar" />
+                <image class="avatar" :src="'https://wl.wanghun.dpdns.org' + item.userAvatar || defaultAvatar" />
                 <text class="user-name">{{ item.travelogueAuthor }}</text>
               </view>
               <view class="views-count">
@@ -51,7 +51,7 @@
             <text class="item-title">{{ item.travelogueTitle }}</text>
             <view class="user-info">
               <view class="avatar-wrapper">
-                <image class="avatar" :src="'http://43.131.235.203:8586' + item.userAvatar || defaultAvatar" />
+                <image class="avatar" :src="'https://wl.wanghun.dpdns.org' + item.userAvatar || defaultAvatar" />
                 <text class="user-name">{{ item.travelogueAuthor }}</text>
               </view>
               <view class="views-count">

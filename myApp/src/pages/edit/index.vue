@@ -109,7 +109,7 @@ const uploadFile = async (file) => {
 
   try {
     const res = await Taro.uploadFile({
-      url: 'http://43.131.235.203:8586/api/upload',
+      url: 'https://wl.wanghun.dpdns.org/api/upload',
       filePath: file.tempFilePath,
       name: 'file',
       header: {
@@ -121,7 +121,7 @@ const uploadFile = async (file) => {
     if (result.data?.url) {
       const newFile = {
         type: file.fileType,
-        url: 'http://43.131.235.203:8586' + result.data.url,
+        url: 'https://wl.wanghun.dpdns.org' + result.data.url,
         thumb: file.fileType === 'image' ? file.tempFilePath : null
       }
       if (file.fileType === 'video') {

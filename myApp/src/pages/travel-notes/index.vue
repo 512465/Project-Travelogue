@@ -146,7 +146,7 @@ const handleDelete = (id) => {
     async success(res) {
       if (res.confirm) {
         await Taro.request({
-          url: `http://43.131.235.203:8586/api/travelogue/${id}`,
+          url: `https://wl.wanghun.dpdns.org/api/travelogue/${id}`,
           method: 'DELETE',
           header: {
             Authorization: `Bearer ${userStore.token}`
