@@ -51,7 +51,7 @@ console.log(userStore.token)
 console.log(userStore.userInfo)
 const avatar = ref('')
 if (userStore.userInfo.userAvatar) {
-  avatar.value = 'http://43.131.235.203:8586' + userStore.userInfo.userAvatar
+  avatar.value = 'https://wl.wanghun.dpdns.org' + userStore.userInfo.userAvatar
 }
 console.log(avatar.value)
 
@@ -114,7 +114,7 @@ const uploadFile = async (file) => {
 
   try {
     const res = await Taro.uploadFile({
-      url: 'http://43.131.235.203:8586/api/upload',
+      url: 'https://wl.wanghun.dpdns.org/api/upload',
       filePath: file.tempFilePath,
       name: 'file',
       header: {
@@ -126,7 +126,7 @@ const uploadFile = async (file) => {
     if (result.data?.url) {
       console.log(result.data.url, 1324978454132)
       const res = await Taro.request({
-        url: 'http://43.131.235.203:8586/api/user/avatar',
+        url: 'https://wl.wanghun.dpdns.org/api/user/avatar',
         method: 'PATCH',
         data: {
           userAvatar: result.data.url
@@ -140,7 +140,7 @@ const uploadFile = async (file) => {
       data.userAvatar = res.data.data.newAvatar
       userStore.setUserInfo(data)
       avatar.value = ''
-      avatar.value = 'http://43.131.235.203:8586' + userStore.userInfo.userAvatar
+      avatar.value = 'https://wl.wanghun.dpdns.org' + userStore.userInfo.userAvatar
       Taro.showToast({ title: '修改头像成功', icon: 'success' })
     }
   } catch (error) {

@@ -34,7 +34,7 @@ const userStore = useUserStore()
 const getTravelogs = async () => {
   try {
     const res = await Taro.request({
-      url: 'http://43.131.235.203:8586/api/travelogue/userCollects',
+      url: 'https://wl.wanghun.dpdns.org/api/travelogue/userCollects',
       method: 'GET',
       header: {
         Authorization: `Bearer ${userStore.token}`
