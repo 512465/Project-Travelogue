@@ -19,15 +19,15 @@
       <template v-else>
         <!-- 轮播图 -->
         <view class="swiper-wrapper">
-          <swiper class="test-h" indicatorColor="#999" indicatorActiveColor="#333" :current="current"
-                  :duration="duration" :interval="interval" circular="true" autoplay="true" indicatorDots="true"
-                  @change="onSwiperChange">
+          <swiper class="test-h" :style="{ height: swiperHeight + 'px'}" indicatorColor="#999"
+                  indicatorActiveColor="#333" :current="current" :duration="duration" :interval="interval"
+                  circular="true" autoplay="true" indicatorDots="true" @change="onSwiperChange">
             <swiper-item v-for="(item, idx) in imgs" :key="idx">
-              <view v-if="item.type === 'video'" @tap="playVideo(item)">
-                <video :src="item.url" id="myVideo" controls class="slide-image" />
+              <view v-if="item.type === 'video'" @tap="playVideo(item)" style="height: 100%; display: flex; align-items: center;">
+                <video :src="item.url" id="myVideo" controls class="slide-video" />
               </view>
-              <view v-else @tap="viewImage(item.url)">
-                <image :src="item.url" class="slide-image"/>
+              <view v-else @tap="viewImage(item.url)" style="height: 100%; display: flex; align-items: center;">
+                <image :src="item.url" class="slide-image" mode="widthFix" @load="onImageLoad" />
               </view>
             </swiper-item>
           </swiper>
@@ -102,10 +102,13 @@ const duration = 500
 const interval = 5000
 const imgs = ref([])
 const severUrl = 'https://wl.wanghun.dpdns.org'
-const imgUrls = ref([])
 const isLike = ref(false)
 const isCollects = ref(false)
 const id = ref(Taro.getCurrentInstance().router?.params?.id || '')
+const swiperHeight = ref(300) // 初始值，单位是 px
+
+// 用于记录当前最大高度
+let maxHeight = 0
 
 const formatDate = timestamp =>
   new Date(timestamp).toLocaleDateString()
@@ -192,6 +195,18 @@ useShareAppMessage(() => {
   }
 })
 
+// 图片加载后获取实际高度
+const onImageLoad = (e) => {
+  const { width, height } = e.detail
+  const screenWidth = Taro.getSystemInfoSync().windowWidth
+  const scale = screenWidth / width
+  const realHeight = height * scale
+
+  if (realHeight > maxHeight) {
+    maxHeight = realHeight
+    swiperHeight.value = maxHeight
+  }
+}
 // 生命周期
 onMounted(async () => {
   if (!id.value) {
