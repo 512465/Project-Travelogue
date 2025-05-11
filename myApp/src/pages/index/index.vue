@@ -161,7 +161,7 @@ const loadTravelCards = async (isRefresh = false) => {
     skeletonLoading.value = true
   }
 
-  const res = await getTravelogs({ page, limit: 10 })
+  const res = await getTravelogs({ page, limit: 10, keyword: searchQuery.value })
   const items = res.data.items.map((item) => {
     return {
       ...item,
@@ -192,8 +192,15 @@ const loadTravelCards = async (isRefresh = false) => {
 const performSearch = async () => {
   if (searchQuery.value) {
     loading.value = true
-    const res = await searchTravelogs(searchQuery.value)
-    const items = res.data.items || []
+    const res = await getTravelogs({
+      page: 1,
+      limit: 10,
+      keyword: searchQuery.value
+    })
+    const items = (res.data.items || []).map((item) => ({
+      ...item,
+      isImage: isImage(item.travelogueCover)
+    }))
 
     travelCards.value = items || []
 
