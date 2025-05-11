@@ -164,6 +164,7 @@ const ReviewDetail = () => {
                 src={review.submitterInfo.avatar.startsWith('/') ? `https://travle.hub.feashow.cn${review.submitterInfo.avatar}` : review.submitterInfo.avatar} 
                 alt="用户头像" 
                 style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '50%' }} 
+                loading="lazy"
               />
             </Descriptions.Item>
           )}

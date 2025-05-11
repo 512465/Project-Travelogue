@@ -111,6 +111,7 @@ const ReviewList = () => {
           src={cover ? cover.replace(/`/g, '').trim() : ''} 
           alt="封面" 
           style={{ width: 60, height: 40, objectFit: 'cover' }} 
+          loading="lazy"
         />
       ),
     },
