@@ -16,8 +16,9 @@
       "outputPath": ""
     },
     "minifyWXSS": true,
-    "minifyWXML": false,
-    "ignoreUploadUnusedFiles": false
+    "minifyWXML": true,
+    "ignoreUploadUnusedFiles": false,
+    "packNpmRelationList": []
   },
   "compileType": "miniprogram",
   "libVersion": "3.8.3",
