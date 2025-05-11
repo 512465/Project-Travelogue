@@ -19,11 +19,12 @@
       <template v-else>
         <!-- 轮播图 -->
         <view class="swiper-wrapper">
-          <swiper class="test-h" :style="{ height: swiperHeight + 'px'}" indicatorColor="#999"
+          <swiper class="test-h" :style="{ height: swiperHeight + 'px' }" indicatorColor="#999"
                   indicatorActiveColor="#333" :current="current" :duration="duration" :interval="interval"
                   circular="true" autoplay="true" indicatorDots="true" @change="onSwiperChange">
             <swiper-item v-for="(item, idx) in imgs" :key="idx">
-              <view v-if="item.type === 'video'" @tap="playVideo(item)" style="height: 100%; display: flex; align-items: center;">
+              <view v-if="item.type === 'video'" @tap="playVideo(item)"
+                    style="height: 100%; display: flex; align-items: center;">
                 <video :src="item.url" id="myVideo" controls class="slide-video" />
               </view>
               <view v-else @tap="viewImage(item.url)" style="height: 100%; display: flex; align-items: center;">
@@ -54,7 +55,7 @@
     </scroll-view>
 
     <!-- ✅ 固定底部操作栏 -->
-    <view class="footer-info-fixed">
+    <view class="footer-info-fixed" :style="{ pointerEvents: loading ? 'none' : 'auto', opacity: loading ? 0.5 : 1 }">
       <view class="interaction-bar">
         <view class="interaction-item">
           <Button openType="share" class="share-btn">
@@ -171,8 +172,10 @@ const handleLike = () => {
   isLike.value = !isLike.value
   if (isLike.value) {
     detail.value.travelogueLikes += 1
+    Taro.showToast({ title: '点赞成功', icon: 'success' })
   } else {
     detail.value.travelogueLikes -= 1
+    Taro.showToast({ title: '取消点赞', icon: 'none' })
   }
   isLikeSever(id.value)
 }
@@ -181,8 +184,10 @@ const handleCollect = () => {
   isCollects.value = !isCollects.value
   if (isCollects.value) {
     detail.value.travelogueCollects += 1
+    Taro.showToast({ title: '收藏成功', icon: 'success' })
   } else {
     detail.value.travelogueCollects -= 1
+    Taro.showToast({ title: '取消收藏', icon: 'none' })
   }
   isCollectSever(id.value)
 }
