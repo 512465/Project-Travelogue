@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Row, Col, Card, Statistic, Table, Typography, Tag, message } from 'antd';
-import { UserOutlined, FileTextOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { FileTextOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { travelogueApi } from '../../services/api';
 
 const { Title } = Typography;
@@ -8,7 +8,6 @@ const { Title } = Typography;
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
-    totalUsers: 0,
     totalReviews: 0,
     pendingReviews: 0,
     completedReviews: 0,
@@ -50,7 +49,6 @@ const Dashboard = () => {
           
           // 更新统计数据
           setStats({
-            totalUsers: 2, // 实际用户数量：admin和ran0703
             totalReviews: totalCount, // 游记总数
             pendingReviews: pendingCount, // 待审核数量
             completedReviews: approvedCount + rejectedCount, // 已完成审核数量（通过+拒绝）
@@ -133,17 +131,7 @@ const Dashboard = () => {
     <div style={{ width: '100%', padding: '20px', maxWidth: '100%', boxSizing: 'border-box' }}>
       <Title level={2}>仪表盘</Title>
       <Row gutter={24}>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="总用户数"
-              value={stats.totalUsers}
-              prefix={<UserOutlined />}
-              loading={loading}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
+        <Col span={8}>
           <Card>
             <Statistic
               title="游记总数"
@@ -153,7 +141,7 @@ const Dashboard = () => {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col span={8}>
           <Card>
             <Statistic
               title="待审核"
@@ -164,7 +152,7 @@ const Dashboard = () => {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col span={8}>
           <Card>
             <Statistic
               title="已完成审核"

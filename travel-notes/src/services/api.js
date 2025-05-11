@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // 创建axios实例
 const api = axios.create({
-  baseURL: 'http://43.131.235.203:8586', // 服务器地址
+  baseURL: 'https://wl.wanghun.dpdns.org', // 服务器地址
   timeout: 10000, // 请求超时时间
 });
 
