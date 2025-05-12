@@ -37,6 +37,10 @@ const request = async (method, url, data = {}, config = {}) => {
 
     // 响应拦截器
     if (response.statusCode) {
+      if (response.statusCode === 401) {
+        Taro.redirectTo({ url: '/pages/login/index' })
+         throw new Error(`请先登录，状态码：${response.statusCode}`)
+      }
       if (response.data.code) {
         return response.data
       }

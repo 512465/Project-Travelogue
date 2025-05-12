@@ -7,21 +7,22 @@ export const useUserStore = defineStore(
   'user',
   () => {
     const token = ref('') // 登录凭证
+    const userInfo = ref({}) // 用户信息
 
     const setToken = (newToken) => {
       token.value = newToken
       // Taro.setStorageSync('token', newToken)
     }
-    const removeToken = () => {
-      token.value = ''
-    }
-
-    const userInfo = ref({}) // 用户信息
 
     const setUserInfo = (newUserInfo) => {
       userInfo.value = newUserInfo
-      // Taro.setStorageSync('userInfo', newUserInfo)
     }
+
+    const removeToken = () => {
+      token.value = ''
+      userInfo.value = {}
+    }
+
 
     return {
       token,

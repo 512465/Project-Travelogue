@@ -169,27 +169,34 @@ const viewImage = (url) => {
 }
 
 const handleLike = () => {
-  isLike.value = !isLike.value
-  if (isLike.value) {
-    detail.value.travelogueLikes += 1
-    Taro.showToast({ title: '点赞成功', icon: 'success' })
-  } else {
-    detail.value.travelogueLikes -= 1
-    Taro.showToast({ title: '取消点赞', icon: 'none' })
-  }
-  isLikeSever(id.value)
+  isLikeSever(id.value).then(() => {
+    isLike.value = !isLike.value
+    if (isLike.value) {
+      detail.value.travelogueLikes += 1
+      Taro.showToast({ title: '点赞成功', icon: 'success' })
+    } else {
+      detail.value.travelogueLikes -= 1
+      Taro.showToast({ title: '取消点赞', icon: 'none' })
+    }
+  }).catch(() => {
+    Taro.showToast({ title: '请先登录', icon: 'none' })
+  })
 }
 
 const handleCollect = () => {
-  isCollects.value = !isCollects.value
-  if (isCollects.value) {
-    detail.value.travelogueCollects += 1
-    Taro.showToast({ title: '收藏成功', icon: 'success' })
-  } else {
-    detail.value.travelogueCollects -= 1
-    Taro.showToast({ title: '取消收藏', icon: 'none' })
-  }
-  isCollectSever(id.value)
+  isCollectSever(id.value).then((res) => {
+    console.log(res)
+    isCollects.value = !isCollects.value
+    if (isCollects.value) {
+      detail.value.travelogueCollects += 1
+      Taro.showToast({ title: '收藏成功', icon: 'success' })
+    } else {
+      detail.value.travelogueCollects -= 1
+      Taro.showToast({ title: '取消收藏', icon: 'none' })
+    }
+  }).catch(() => {
+    Taro.showToast({ title: '请先登录', icon: 'none' })
+  })
 }
 
 useShareAppMessage(() => {
