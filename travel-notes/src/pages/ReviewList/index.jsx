@@ -6,6 +6,7 @@ import ReviewActions from '../../components/ReviewActions';
 import DeleteButton from '../../components/DeleteButton';
 import { useNavigate } from 'react-router-dom';
 import { travelogueApi } from '../../services/api';
+import MediaGallery from '../../components/ImageGallery';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -38,12 +39,17 @@ const ReviewList = () => {
           title: item.travelogueTitle,
           content: item.travelogueContent,
           submitter: item.travelogueAuthor,
+          submitterAvatar: item.userAvatar,
           submitTime: new Date(item.createTime).toLocaleString(),
+          updateTime: new Date(item.updateTime).toLocaleString(),
           status: item.travelogueStatus,
           cover: item.travelogueCover,
           images: item.travelogueImages,
           userId: item.userId,
-          userAvatar: item.userAvatar,
+          views: item.travelogueViews,
+          likes: item.travelogueLikes,
+          collects: item.travelogueCollects,
+          rejectReason: item.travelogueRejectReason,
           // 保留原始数据，以便在详情页使用
           originalData: item
         }));
@@ -106,13 +112,29 @@ const ReviewList = () => {
       dataIndex: 'cover',
       key: 'cover',
       width: 100,
-      render: (cover) => (
-        <img 
-          src={cover ? cover.replace(/`/g, '').trim() : ''} 
-          alt="封面" 
-          style={{ width: 60, height: 40, objectFit: 'cover' }} 
-        />
-      ),
+      render: (cover, record) => {
+        // 判断是否为视频
+        const isVideo = record.images && record.images[0] && record.images[0].type === 'video';
+        if (isVideo) {
+          return (
+            <video
+              src={cover}
+              style={{ width: 60, height: 40, objectFit: 'cover', borderRadius: 4 }}
+              controls={false}
+              muted
+              preload="metadata"
+            />
+          );
+        }
+        return (
+          <img 
+            src={cover ? cover.replace(/`/g, '').trim() : ''} 
+            alt="封面" 
+            style={{ width: 60, height: 40, objectFit: 'cover' }} 
+            loading="lazy"
+          />
+        );
+      },
     },
     {
       title: '标题',
@@ -132,7 +154,37 @@ const ReviewList = () => {
       title: '提交人',
       dataIndex: 'submitter',
       key: 'submitter',
-      width: 100,
+      width: 140,
+      render: (text, record) => (
+        <span style={{ display: 'flex', alignItems: 'center' }}>
+          {record.submitterAvatar && (
+            <img
+              src={record.submitterAvatar.startsWith('/') ? `https://wl.wanghun.dpdns.org${record.submitterAvatar}` : record.submitterAvatar}
+              alt="头像"
+              style={{ width: 28, height: 28, borderRadius: '50%', marginRight: 8, objectFit: 'cover' }}
+            />
+          )}
+          {text}
+        </span>
+      ),
+    },
+    {
+      title: '浏览量',
+      dataIndex: 'views',
+      key: 'views',
+      width: 80,
+    },
+    {
+      title: '点赞',
+      dataIndex: 'likes',
+      key: 'likes',
+      width: 80,
+    },
+    {
+      title: '收藏',
+      dataIndex: 'collects',
+      key: 'collects',
+      width: 80,
     },
     {
       title: '提交时间',
@@ -147,6 +199,13 @@ const ReviewList = () => {
       key: 'status',
       width: 100,
       render: (status) => <StatusTag status={status} />,
+    },
+    {
+      title: '拒绝理由',
+      dataIndex: 'rejectReason',
+      key: 'rejectReason',
+      width: 180,
+      render: (text, record) => record.status === -1 && text ? <span style={{ color: 'red' }}>{text}</span> : null,
     },
     {
       title: '操作',
