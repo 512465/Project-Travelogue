@@ -28,7 +28,7 @@
         <text class="counter">{{ remainingTitleCount }}/20</text>
       </view>
       <view class="input-wrapper">
-        <textarea class="textarea" focus="true" v-model="content" height="200" :maxLength="250" placeholder="请输入内容"
+        <textarea class="textarea" focus="true" v-model="content" height="200" :maxlength="199" placeholder="请输入内容"
                   @input="handleContentInput" />
         <text class="counter">{{ remainingContentCount }}/200</text>
       </view>

@@ -88,6 +88,7 @@ const handleLogout = () => {
     success: (res) => {
       if (res.confirm) {
         userStore.removeToken()
+        console.log(userStore.token)
         Taro.reLaunch({ url: '/pages/index/index' })
       }
       console.log(res)
