@@ -11,9 +11,9 @@
 
     <Form class="form" @submit="handleSubmit">
       <input v-model="formData.userName" class="input" placeholder="请输入用户名" name="userName" />
-      <input v-model="formData.userPassword" type="password" class="input" placeholder="请输入密码" password="true"
+      <input v-model="formData.userPassword" type="password" class="input" placeholder="请输入密码,大小写字母加数字组合" password="true"
         name="userPassword" />
-      <input v-if="!isLogin" v-model="formData.userPasswordConfirm" type="password" class="input" placeholder="请确认密码"
+      <input v-if="!isLogin" v-model="formData.userPasswordConfirm" type="password" class="input" placeholder="请再次输入密码,大小写字母加数字组合"
         password="true" name="userPasswordConfirm" />
       <button class="submit-btn" form-type="submit" :loading="isSubmitting">
         {{ isLogin ? '登录' : '注册' }}
