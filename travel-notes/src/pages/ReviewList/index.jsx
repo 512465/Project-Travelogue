@@ -201,13 +201,6 @@ const ReviewList = () => {
       render: (status) => <StatusTag status={status} />,
     },
     {
-      title: '拒绝理由',
-      dataIndex: 'rejectReason',
-      key: 'rejectReason',
-      width: 180,
-      render: (text, record) => record.status === -1 && text ? <span style={{ color: 'red' }}>{text}</span> : null,
-    },
-    {
       title: '操作',
       key: 'action',
       width: 200,
@@ -329,6 +322,43 @@ const ReviewList = () => {
     }
   };
 
+  // 处理批量删除
+  const handleBatchDelete = () => {
+    if (selectedRowKeys.length === 0) {
+      message.warning('请选择要删除的游记');
+      return;
+    }
+    Modal.confirm({
+      title: '确认批量删除',
+      content: `确定要删除选中的 ${selectedRowKeys.length} 条游记吗？此操作不可恢复！`,
+      okText: '确认删除',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk: async () => {
+        setBatchLoading(true);
+        try {
+          await Promise.all(selectedRowKeys.map(id => travelogueApi.deleteTravelogue(id)));
+          message.success('批量删除成功');
+          setSelectedRowKeys([]);
+          // 判断删除后是否需要跳转到上一页
+          if (reviews.length === selectedRowKeys.length && searchParams.page > 1) {
+            // 当前页全删光且不是第一页，跳到上一页
+            const newPage = searchParams.page - 1;
+            setSearchParams(prev => ({ ...prev, page: newPage }));
+            fetchTravelogueData({ ...searchParams, page: newPage });
+          } else {
+            // 否则刷新当前页
+            fetchTravelogueData();
+          }
+        } catch (error) {
+          message.error('批量删除失败');
+        } finally {
+          setBatchLoading(false);
+        }
+      }
+    });
+  };
+
   // 表格行选择配置
   const rowSelection = {
     selectedRowKeys,
@@ -336,7 +366,7 @@ const ReviewList = () => {
       setSelectedRowKeys(newSelectedRowKeys);
     },
     getCheckboxProps: (record) => ({
-      disabled: record.status !== 0, // 只有待审核状态的游记可以被选择
+      disabled: false, // 允许所有行都能被选中
     }),
   };
 
@@ -389,6 +419,13 @@ const ReviewList = () => {
               loading={batchLoading}
             >
               批量拒绝
+            </Button>
+            <Button
+              danger
+              onClick={handleBatchDelete}
+              loading={batchLoading}
+            >
+              批量删除
             </Button>
             <span style={{ marginLeft: 8 }}>
               已选择 {selectedRowKeys.length} 项
