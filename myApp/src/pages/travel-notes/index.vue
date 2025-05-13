@@ -81,6 +81,7 @@ const getTravelogs = async (isRefresh = false) => {
   if (isRefresh) {
     page = 1
     travelListItems.value = []
+    hasMore.value = true
   }
 
   const res = await getTravelDetail({ page, limit: 5 })
@@ -152,7 +153,7 @@ const handleDelete = (id) => {
           }
         })
         Taro.showToast({ title: '删除成功', icon: 'success' })
-        getTravelogs()
+        getTravelogs(true)
       }
     }
   })
