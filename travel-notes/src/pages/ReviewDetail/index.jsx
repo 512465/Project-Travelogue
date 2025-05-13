@@ -6,6 +6,7 @@ import StatusTag from '../../components/StatusTag';
 import ReviewActions from '../../components/ReviewActions';
 import DeleteButton from '../../components/DeleteButton';
 import ImageGallery from '../../components/ImageGallery';
+import MediaGallery from '../../components/ImageGallery';
 import { travelogueApi } from '../../services/api';
 
 const { Title, Paragraph } = Typography;
@@ -133,19 +134,27 @@ const ReviewDetail = () => {
           <Descriptions.Item label="审核状态"><StatusTag status={review.status} /></Descriptions.Item>
           <Descriptions.Item label="标题" span={2}>{review.title}</Descriptions.Item>
           <Descriptions.Item label="作者">{review.submitter}</Descriptions.Item>
+          <Descriptions.Item label="用户ID">{review.submitterInfo.id}</Descriptions.Item>
+          <Descriptions.Item label="浏览量">{review.originalData.travelogueViews}</Descriptions.Item>
+          <Descriptions.Item label="点赞">{review.originalData.travelogueLikes}</Descriptions.Item>
+          <Descriptions.Item label="收藏">{review.originalData.travelogueCollects}</Descriptions.Item>
           <Descriptions.Item label="提交时间">{review.submitTime}</Descriptions.Item>
           <Descriptions.Item label="更新时间">{review.updateTime}</Descriptions.Item>
+          {review.status === -1 && review.originalData.travelogueRejectReason && (
+            <Descriptions.Item label="拒绝理由" span={2}>
+              <span style={{ color: 'red' }}>{review.originalData.travelogueRejectReason}</span>
+            </Descriptions.Item>
+          )}
         </Descriptions>
       </Card>
 
       <Card title="内容详情" style={{ marginBottom: 16, width: '100%' }}>
         <Paragraph style={{ width: '100%' }}>{review.content}</Paragraph>
-
         {review.images && review.images.length > 0 && (
           <div style={{ marginTop: 16 }}>
             <Divider orientation="left">媒体内容</Divider>
-            <ImageGallery 
-              images={review.images.filter(media => media.type === 'image').map(media => media.url)} 
+            <MediaGallery 
+              media={review.images} 
               width={200}
               height={150}
               gap={16}
@@ -161,9 +170,10 @@ const ReviewDetail = () => {
           {review.submitterInfo.avatar && (
             <Descriptions.Item label="头像" span={2}>
               <img 
-                src={review.submitterInfo.avatar.startsWith('/') ? `https://travle.hub.feashow.cn${review.submitterInfo.avatar}` : review.submitterInfo.avatar} 
+                src={review.submitterInfo.avatar.startsWith('/') ? `https://wl.wanghun.dpdns.org${review.submitterInfo.avatar}` : review.submitterInfo.avatar} 
                 alt="用户头像" 
                 style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: '50%' }} 
+                loading="lazy"
               />
             </Descriptions.Item>
           )}

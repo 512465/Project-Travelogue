@@ -1,17 +1,23 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
 import Layout from '../components/Layout';
-import Login from '../pages/Login';
-import Dashboard from '../pages/Dashboard';
-import ReviewList from '../pages/ReviewList';
-import ReviewDetail from '../pages/ReviewDetail';
 import ErrorBoundary from '../components/ErrorBoundary';
+
+const Login = lazy(() => import('../pages/Login'));
+const Dashboard = lazy(() => import('../pages/Dashboard'));
+const ReviewList = lazy(() => import('../pages/ReviewList'));
+const ReviewDetail = lazy(() => import('../pages/ReviewDetail'));
 
 // 路由配置
 const router = createBrowserRouter([
   {
     path: '/login',
-    element: <Login />,
-    errorElement: <ErrorBoundary><Login /></ErrorBoundary>,
+    element: (
+      <Suspense fallback={<div>加载中...</div>}>
+        <Login />
+      </Suspense>
+    ),
+    errorElement: <ErrorBoundary><Suspense fallback={<div>加载中...</div>}><Login /></Suspense></ErrorBoundary>,
   },
   {
     path: '/',
@@ -23,15 +29,15 @@ const router = createBrowserRouter([
       },
       {
         path: 'dashboard',
-        element: <ErrorBoundary><Dashboard /></ErrorBoundary>,
+        element: <ErrorBoundary><Suspense fallback={<div>加载中...</div>}><Dashboard /></Suspense></ErrorBoundary>,
       },
       {
         path: 'reviews',
-        element: <ErrorBoundary><ReviewList /></ErrorBoundary>,
+        element: <ErrorBoundary><Suspense fallback={<div>加载中...</div>}><ReviewList /></Suspense></ErrorBoundary>,
       },
       {
         path: 'reviews/:id',
-        element: <ErrorBoundary><ReviewDetail /></ErrorBoundary>,
+        element: <ErrorBoundary><Suspense fallback={<div>加载中...</div>}><ReviewDetail /></Suspense></ErrorBoundary>,
       },
     ],
   },

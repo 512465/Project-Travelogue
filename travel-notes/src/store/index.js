@@ -41,7 +41,6 @@ const authSlice = createSlice({
       // 如果 action.payload 中提供了 access_token，则将其存储到 localStorage
       if (action.payload.access_token) {
         localStorage.setItem('token', action.payload.access_token);
-
         // 同时也将用户数据保存到 localStorage 以实现会话持久化
         // 创建一个仅包含必要用户详细信息的对象进行存储
         const userDataToStore = {
@@ -85,52 +84,13 @@ const authSlice = createSlice({
   },
 });
 
-// --- 审核状态切片 (reviewSlice) ---
-// (这部分与你之前提供的代码相同，保持不变)
-const reviewSlice = createSlice({
-  name: 'review',
-  initialState: {
-    reviews: [],
-    loading: false,
-    error: null,
-  },
-  reducers: {
-    fetchReviewsStart: (state) => {
-      state.loading = true;
-      state.error = null;
-    },
-    fetchReviewsSuccess: (state, action) => {
-      state.reviews = action.payload;
-      state.loading = false;
-    },
-    fetchReviewsFailure: (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    },
-    updateReviewStatus: (state, action) => {
-      const { id, status } = action.payload;
-      const reviewIndex = state.reviews.findIndex((review) => review.id === id);
-      if (reviewIndex !== -1) {
-        state.reviews[reviewIndex].status = status;
-      }
-    },
-  },
-});
-
 // 导出 actions
-export const { login, logout, setUser } = authSlice.actions; // 从 authSlice 导出 actions, 包括新增的 setUser
-export const {
-  fetchReviewsStart,
-  fetchReviewsSuccess,
-  fetchReviewsFailure,
-  updateReviewStatus,
-} = reviewSlice.actions; // 从 reviewSlice 导出 actions
+export const { login, logout, setUser } = authSlice.actions;
 
 // 创建并导出 store
 const store = configureStore({
   reducer: {
     auth: authSlice.reducer, // 注册 auth reducer
-    review: reviewSlice.reducer, // 注册 review reducer
   },
 });
 
