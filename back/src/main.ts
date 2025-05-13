@@ -22,7 +22,6 @@ async function bootstrap() {
       maxAge: 3600, // 预检请求的缓存时间，单位为秒
     });
     await app.listen(3000);
-    console.log('正在监听端口：', 3000);
   } catch (error) {
     console.error('应用启动失败:', error);
     process.exit(1);

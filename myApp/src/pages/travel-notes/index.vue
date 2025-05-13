@@ -48,6 +48,8 @@
         </view>
       </view>
     </view>
+    <view v-if="loading" class="loading">加载中...</view>
+    <view v-if="!hasMore" class="loading">没有更多数据了</view>
   </view>
   <view v-else class="empty">
     <view class="empty-content">
@@ -62,36 +64,49 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import Taro from '@tarojs/taro'
+import Taro, { usePullDownRefresh, useReachBottom } from '@tarojs/taro'
 import { useUserStore } from '../../stores/modules/user'
+import { getTravelDetail } from '../../api/user'
 
 const travelListItems = ref([])
 const userStore = useUserStore()
+const loading = ref(false)
+const hasMore = ref(true)
+let page = 1
 
-const getTravelogs = async () => {
-  try {
-    const res = await Taro.request({
-      url: 'http://175.24.138.67:8586/api/travelogue',
-      method: 'GET',
-      header: {
-        Authorization: `Bearer ${userStore.token}`
-      }
-    })
-    console.log(res)
-    travelListItems.value = res.data.data.items.map((item) => {
-      return {
-        ...item,
-        type: isImage(item.travelogueCover)
-      }
-    })
-  } catch (error) {
-    console.error(error)
+const getTravelogs = async (isRefresh = false) => {
+  if (loading.value || (!hasMore.value && !isRefresh)) return
+  loading.value = true
+
+  if (isRefresh) {
+    page = 1
+    travelListItems.value = []
   }
+
+  const res = await getTravelDetail({ page, limit: 5 })
+  const items = res.data.items.map((item) => {
+    return {
+      ...item,
+      type: isImage(item.travelogueCover)
+    }
+  }) || []
+
+  if (isRefresh) {
+    travelListItems.value = items
+  } else {
+    travelListItems.value = [...travelListItems.value, ...items]
+  }
+
+  if (items.length < 5) hasMore.value = false
+  else page++
+
+  loading.value = false
+  if (isRefresh) Taro.stopPullDownRefresh()
 }
 
 // 是否为图片
 const isImage = (url) => {
-  return /\.(jpg|jpeg|png|gif|bmp)$/.test(url)
+  return /\.(jpg|jpeg|png|gif|bmp|webp)$/.test(url)
 }
 
 onMounted(() => {
@@ -130,7 +145,7 @@ const handleDelete = (id) => {
     async success(res) {
       if (res.confirm) {
         await Taro.request({
-          url: `http://175.24.138.67:8586/api/travelogue/${id}`,
+          url: `https://wl.wanghun.dpdns.org/api/travelogue/${id}`,
           method: 'DELETE',
           header: {
             Authorization: `Bearer ${userStore.token}`
@@ -142,6 +157,14 @@ const handleDelete = (id) => {
     }
   })
 }
+// 下拉刷新
+usePullDownRefresh(() => {
+  getTravelogs(true)
+})
+// 触底
+useReachBottom(() => {
+  getTravelogs()
+})
 </script>
 
 <style lang="scss">
@@ -299,5 +322,11 @@ const handleDelete = (id) => {
     font-size: 28px;
     color: #999;
   }
+}
+
+.loading {
+  padding: 40rpx 0;
+  color: #999;
+  text-align: center;
 }
 </style>

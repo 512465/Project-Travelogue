@@ -48,7 +48,6 @@ export class TravelogueController {
   @Get('userCollects')
   @UseGuards(AuthUserGuard)
   userCollectsList(@Request() req) {
-    console.log(req.user.sub);
     return this.travelogueService.userCollectsList(req.user.sub);
   }
 

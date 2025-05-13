@@ -1,11 +1,13 @@
 <template>
-  <view class="container" v-if="!userStore.token">
+  <view
+    style="background-image: url('https://wl.wanghun.dpdns.org/uploads/2020031921552395638.jpg');"
+    class="container" v-if="!userStore.token">
     <view class="header">
       <text>登录开启旅程</text>
       <Button class="login-btn" @tap="handleClick">登录/注册</Button>
     </view>
   </view>
-  <view class="page-container" v-else>
+  <view style="background-image: url('https://wl.wanghun.dpdns.org/uploads/2020031921552395638.jpg');" class="page-container" v-else>
     <!-- 头部区域 -->
     <view class="headerMain">
       <image class="avatar" :src="avatar" mode="aspectFill" @tap="handleUpdateAvatar" />
@@ -34,11 +36,6 @@
         </button>
       </view>
     </view>
-
-    <!-- 底部信息 -->
-    <view class="footer">
-      <text>欢迎来到旅行日记</text>
-    </view>
   </view>
 </template>
 
@@ -51,16 +48,12 @@ import { useUserStore } from '../../stores/index.js'
 
 const userStore = useUserStore()
 const token = userStore.token
-console.log(userStore.token)
-console.log(userStore.userInfo)
 const avatar = ref('')
 if (userStore.userInfo.userAvatar) {
-  avatar.value = 'http://175.24.138.67:8586' + userStore.userInfo.userAvatar
+  avatar.value = 'https://wl.wanghun.dpdns.org' + userStore.userInfo.userAvatar
 }
-console.log(avatar.value)
 
 const handleClick = () => {
-  console.log('handleClick')
   Taro.reLaunch({
     url: '/pages/login/index'
   })
@@ -68,7 +61,6 @@ const handleClick = () => {
 
 // 处理我的游记
 const handleMyTravelNotes = () => {
-  console.log('我的游记')
   Taro.navigateTo({
     url: '/pages/travel-notes/index'
   })
@@ -76,7 +68,6 @@ const handleMyTravelNotes = () => {
 
 // 处理我的收藏
 const handleMyFavorites = () => {
-  console.log('我的收藏')
   Taro.navigateTo({
     url: '/pages/favorites/index'
   })
@@ -84,7 +75,6 @@ const handleMyFavorites = () => {
 
 // 处理退出登录
 const handleLogout = () => {
-  console.log('退出登录')
   Taro.showModal({
     title: '提示',
     content: '确定要退出登录吗？',
@@ -93,23 +83,18 @@ const handleLogout = () => {
         userStore.removeToken()
         Taro.reLaunch({ url: '/pages/index/index' })
       }
-      console.log(res)
     }
   })
 }
 
 // 处理头像更新
 const handleUpdateAvatar = () => {
-  console.log('更新头像')
   Taro.chooseMedia({
     count: 1,
     mediaType: ['image'],
     sourceType: ['album', 'camera'],
     success: (res) => {
-      // const tempFilePath = res.tempFiles[0].tempFilePath
-      // userStore.updateAvatar(tempFilePath)
       uploadFile(res.tempFiles[0])
-      console.log(res)
     }
   })
 }
@@ -120,19 +105,17 @@ const uploadFile = async (file) => {
 
   try {
     const res = await Taro.uploadFile({
-      url: 'http://175.24.138.67:8586/api/upload',
+      url: 'https://wl.wanghun.dpdns.org/api/upload',
       filePath: file.tempFilePath,
       name: 'file',
       header: {
         Authorization: `Bearer ${token}`
       }
     })
-    console.log(res)
     const result = JSON.parse(res.data)
     if (result.data?.url) {
-      console.log(result.data.url, 1324978454132)
       const res = await Taro.request({
-        url: 'http://175.24.138.67:8586/api/user/avatar',
+        url: 'https://wl.wanghun.dpdns.org/api/user/avatar',
         method: 'PATCH',
         data: {
           userAvatar: result.data.url
@@ -141,12 +124,11 @@ const uploadFile = async (file) => {
           Authorization: `Bearer ${token}`
         }
       })
-      console.log(res, 1324978454132)
       const data = res.data.data.newData
       data.userAvatar = res.data.data.newAvatar
       userStore.setUserInfo(data)
       avatar.value = ''
-      avatar.value = 'http://175.24.138.67:8586' + userStore.userInfo.userAvatar
+      avatar.value = 'https://wl.wanghun.dpdns.org' + userStore.userInfo.userAvatar
       Taro.showToast({ title: '修改头像成功', icon: 'success' })
     }
   } catch (error) {
@@ -166,7 +148,6 @@ const uploadFile = async (file) => {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(to bottom, #4a90e2, #1a73e8);
   padding: 20px;
 }
 
@@ -176,38 +157,26 @@ const uploadFile = async (file) => {
   padding: 20px;
   text-align: center;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
   width: 90%;
   max-width: 400px;
 
-  .login-btn,
-  .check-order {
-    margin-top: 10px;
-    padding: 10px 20px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
   .login-btn {
-    background-color: #ff9800;
-    color: white;
+    margin-top: 10px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    background-color: #ffffff;
+    color: #ff6d00;
+    font-weight: bold;
+    font-size: 30rpx;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.3);
 
-    &:hover {
-      background-color: #ff6d00;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-  }
-
-  .check-order {
-    background-color: transparent;
-    border: 1px solid white;
-    color: white;
-
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.2);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    &:active {
+      background-color: #fff3e0;
+      transform: scale(0.96);
+      color: #e65100;
     }
   }
 }
@@ -216,12 +185,10 @@ const uploadFile = async (file) => {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #f5f5f5;
 }
 
 .headerMain {
   padding: 60rpx 40rpx;
-  background-color: #4a90e2;
   display: flex;
   align-items: center;
 
@@ -231,11 +198,18 @@ const uploadFile = async (file) => {
     border-radius: 50%;
     border: 4rpx solid #fff;
     margin-right: 40rpx;
+    box-shadow: 0 6rpx 12rpx rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+
+    &:active {
+      transform: scale(1.05);
+    }
   }
 
   .username {
     color: #fff;
-    font-size: 36rpx;
+    font-size: 60rpx;
+    font-weight: 700;
     font-weight: bold;
   }
 }
@@ -255,18 +229,18 @@ const uploadFile = async (file) => {
 }
 
 .menu-card {
-  background: #fff;
-  border-radius: 16rpx;
+  border-radius: 20rpx;
   padding: 40rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
-  transition: all 0.3s;
+  box-shadow: 0 6rpx 12rpx rgba(0, 0, 0, 0.8);
+  transition: all 0.3s ease;
 
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.97);
     opacity: 0.9;
+    box-shadow: 0 3rpx 6rpx rgba(0, 0, 0, 0.1);
   }
 
   .card-icon {
@@ -277,7 +251,8 @@ const uploadFile = async (file) => {
 
   .card-text {
     font-size: 32rpx;
-    color: #333;
+    color: #fff;
+    font-weight: 500;
   }
 }
 
@@ -289,13 +264,21 @@ const uploadFile = async (file) => {
     width: 100%;
     height: 100rpx;
     line-height: 100rpx;
-    background: #fff;
+    background: linear-gradient(to right, #ff4d4f, #ff7875);
     border-radius: 16rpx;
-    color: #ff4d4f;
+    color: #fff;
     font-size: 32rpx;
+    font-weight: bold;
+    box-shadow: 0 6rpx 12rpx rgba(255, 77, 79, 0.3);
+    transition: all 0.3s ease;
 
     &::after {
       border: none;
+    }
+
+    &:active {
+      opacity: 0.9;
+      transform: scale(0.98);
     }
 
     .iconfont {
@@ -303,13 +286,5 @@ const uploadFile = async (file) => {
       font-size: 40rpx;
     }
   }
-}
-
-.footer {
-  text-align: center;
-  padding: 40rpx;
-  color: #666;
-  font-size: 28rpx;
-  background-color: #fff;
 }
 </style>

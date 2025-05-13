@@ -4,16 +4,15 @@
       <AtSearchBar @clear="onClear" v-model:value="searchQuery" placeholder="搜索游记标题或作者昵称"
                    @action-click="debouncedSearch" />
     </view>
-    <view class="waterfall-container">
+    <view v-if="skeletonLoading" class="skeleton-wrapper">
+      <at-skeleton :types="{ 'card-6': 'card@6' }" type="card-6" />
+    </view>
+    <view v-else class="waterfall-container">
       <!-- 左列 -->
       <view class="waterfall-column-left" id="leftColumn">
         <view v-for="(item, index) in leftItems" :key="item.travelogueId" class="waterfall-item"
               @tap="gotoDetail(item.travelogueId)">
-          <view v-if="item.isImage" class="item-image-wrapper" :style="{
-            paddingBottom: (item.travelogueCoverHeight && item.travelogueCoverWidth)
-              ? (item.travelogueCoverHeight / item.travelogueCoverWidth * 100) + '%'
-              : '100%'
-          }">
+          <view v-if="item.isImage" class="item-image-wrapper fixed-height">
             <image :src="item.travelogueCover" class="item-image" mode="aspectFill" />
           </view>
 
@@ -25,7 +24,7 @@
             <text class="item-title">{{ item.travelogueTitle }}</text>
             <view class="user-info">
               <view class="avatar-wrapper">
-                <image class="avatar" :src="'http://175.24.138.67:8586' + item.userAvatar || defaultAvatar" />
+                <image class="avatar" :src="'https://wl.wanghun.dpdns.org' + item.userAvatar || defaultAvatar" />
                 <text class="user-name">{{ item.travelogueAuthor }}</text>
               </view>
               <view class="views-count">
@@ -37,15 +36,10 @@
         </view>
       </view>
 
-      <!-- 右列 -->
       <view class="waterfall-column-right" id="rightColumn">
         <view v-for="(item, index) in rightItems" :key="item.travelogueId" class="waterfall-item"
               @tap="gotoDetail(item.travelogueId)">
-          <view v-if="item.isImage" class="item-image-wrapper" :style="{
-            paddingBottom: (item.travelogueCoverHeight && item.travelogueCoverWidth)
-              ? (item.travelogueCoverHeight / item.travelogueCoverWidth * 100) + '%'
-              : '100%'
-          }">
+          <view v-if="item.isImage" class="item-image-wrapper fixed-height">
             <image :src="item.travelogueCover" class="item-image" mode="aspectFill" />
           </view>
 
@@ -57,7 +51,7 @@
             <text class="item-title">{{ item.travelogueTitle }}</text>
             <view class="user-info">
               <view class="avatar-wrapper">
-                <image class="avatar" :src="'http://175.24.138.67:8586' + item.userAvatar || defaultAvatar" />
+                <image class="avatar" :src="'https://wl.wanghun.dpdns.org' + item.userAvatar || defaultAvatar" />
                 <text class="user-name">{{ item.travelogueAuthor }}</text>
               </view>
               <view class="views-count">
@@ -69,6 +63,7 @@
         </view>
       </view>
     </view>
+
     <view v-if="loading" class="loading">加载中...</view>
     <view v-if="!hasMore" class="loading">没有更多数据了</view>
   </view>
@@ -82,6 +77,7 @@ import Taro, { usePullDownRefresh, useReachBottom } from '@tarojs/taro'
 import { getTravelogs, searchTravelogs } from '../../api/travelogue.js'
 import loadingImg from '../../assets/loading.gif'
 import errorImg from '../../assets/error.jpg'
+import { AtSkeleton } from 'taro-ui-vue3'
 
 const travelCards = ref([])
 const searchQuery = ref('')
@@ -94,6 +90,12 @@ const leftItems = ref([])
 const rightItems = ref([])
 const defaultAvatar = 'https://img.soogif.com/esrLXK1tXYDebZBHAKgmGx58EZd1smzH.jpeg_s400x0'
 const errorImage = errorImg
+const skeletonLoading = ref(true)
+
+const skeletonTypes = {
+  'two-column-cards': 'row[col[card@3], col[card@3]]'
+}
+
 
 // 判断是否为图片
 const isImage = (url) => {
@@ -106,44 +108,6 @@ const gotoDetail = (travelogueId) => {
     url: `/pages/travelDetail/index?id=${travelogueId}`
   })
 }
-// 缓存图片尺寸
-const getImageSize = async (url) => {
-  if (!url) return { width: 1, height: 1 }
-
-  if (imageSizeCache.has(url)) {
-    return imageSizeCache.get(url)
-  }
-
-  try {
-    const res = await Taro.getImageInfo({ src: url })
-    const size = { width: res.width, height: res.height }
-    imageSizeCache.set(url, size)
-    return size
-  } catch (e) {
-    console.warn('图片获取失败', url)
-    const fallback = { width: 1, height: 1 }
-    imageSizeCache.set(url, fallback)
-    return fallback
-  }
-}
-
-const cacheImageSizes = async (items) => {
-  const sizePromises = items.map(async (item) => {
-    item.isImage = isImage(item.travelogueCover)
-    if (item.isImage && item.travelogueCover) {
-      // 获取图片尺寸并缓存
-      const size = await getImageSize(item.travelogueCover);
-      item.travelogueCoverWidth = size.width;
-      item.travelogueCoverHeight = size.height;
-    } else {
-      item.travelogueCoverWidth = 1;
-      item.travelogueCoverHeight = 1;
-    }
-  });
-
-  await Promise.all(sizePromises);
-}
-
 
 
 // 获取列高度
@@ -194,14 +158,18 @@ const loadTravelCards = async (isRefresh = false) => {
     travelCards.value = []
     leftItems.value = []
     rightItems.value = []
+    skeletonLoading.value = true
   }
 
-  const res = await getTravelogs({ page, limit: 10 })
-  const items = res.data.items || []
-  // 缓存图片尺寸
-  await cacheImageSizes(items);
-  console.log('items', items)
+  const res = await getTravelogs({ page, limit: 10, keyword: searchQuery.value })
+  const items = res.data.items.map((item) => {
+    return {
+      ...item,
+      isImage: isImage(item.travelogueCover)
+    }
+  }) || []
 
+  skeletonLoading.value = false
   if (isRefresh) {
     travelCards.value = items
   } else {
@@ -222,12 +190,16 @@ const loadTravelCards = async (isRefresh = false) => {
 const performSearch = async () => {
   if (searchQuery.value) {
     loading.value = true
-    const res = await searchTravelogs(searchQuery.value)
-    const items = res.data.items || []
+    const res = await getTravelogs({
+      page: 1,
+      limit: 10,
+      keyword: searchQuery.value
+    })
+    const items = (res.data.items || []).map((item) => ({
+      ...item,
+      isImage: isImage(item.travelogueCover)
+    }))
 
-    // 缓存图片尺寸
-    await cacheImageSizes(items);
-    console.log('items', items)
     travelCards.value = items || []
 
     if (items.length < 10) hasMore.value = false

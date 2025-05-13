@@ -2,7 +2,7 @@
 import Taro from '@tarojs/taro'
 import { useUserStore } from '../stores/index'
 
-const BASE_URL = 'http://175.24.138.67:8586' // 根据环境变量动态配置更佳
+const BASE_URL = 'https://wl.wanghun.dpdns.org' // 根据环境变量动态配置更佳
 
 const request = async (method, url, data = {}, config = {}) => {
   // 合并配置
@@ -37,6 +37,10 @@ const request = async (method, url, data = {}, config = {}) => {
 
     // 响应拦截器
     if (response.statusCode) {
+      if (response.statusCode === 401) {
+        Taro.redirectTo({ url: '/pages/login/index' })
+         throw new Error(`请先登录，状态码：${response.statusCode}`)
+      }
       if (response.data.code) {
         return response.data
       }

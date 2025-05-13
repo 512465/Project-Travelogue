@@ -157,7 +157,6 @@ export class TravelogueService {
     if (!user) {
       throw new NotFoundException('用户不存在');
     }
-    // console.log(user);
     user.userLikes = user.userLikes || [];
     // 检查用户是否已经点赞过
     if (user.userLikes.includes(id)) {
@@ -169,8 +168,7 @@ export class TravelogueService {
       return travelogue;
     } else {
       user.userLikes.push(id);
-      await this.userRepository.save(user); // 保存更新后的用户
-      console.log(user);
+      await this.userRepository.save(user); // 保存更新后的用
       travelogue.travelogueLikes += 1; // 增加点赞数
       await this.travelogueRepository.save(travelogue); // 保存更新后的游记
       return travelogue;
@@ -261,7 +259,21 @@ export class TravelogueService {
         items.push(travelogue); // 将游记对象添加到结果数组中
       }
     }
-    return items;
+    const filteredItems = items.map((item) => {
+      const {
+        travelogueRejectReason,
+        travelogueImages,
+        updateTime,
+        createTime,
+        travelogueLikes,
+        travelogueCollects,
+        travelogueAuthor,
+        userAvatar,
+        ...rest
+      } = item; // 解构出不需要的字段
+      return rest; // 返回过滤后的对象
+    });
+    return filteredItems;
   }
 
   async update(

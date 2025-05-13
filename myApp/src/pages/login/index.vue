@@ -11,10 +11,10 @@
 
     <Form class="form" @submit="handleSubmit">
       <input v-model="formData.userName" class="input" placeholder="请输入用户名" name="userName" />
-      <input v-model="formData.userPassword" type="password" class="input" placeholder="请输入密码" password="true"
-        name="userPassword" />
-      <input v-if="!isLogin" v-model="formData.userPasswordConfirm" type="password" class="input" placeholder="请确认密码"
-        password="true" name="userPasswordConfirm" />
+      <input v-model="formData.userPassword" type="password" class="input" placeholder="请输入密码,大小写字母加数字组合"
+        password="true" name="userPassword" />
+      <input v-if="!isLogin" v-model="formData.userPasswordConfirm" type="password" class="input"
+        placeholder="请再次输入密码,大小写字母加数字组合" password="true" name="userPasswordConfirm" />
       <button class="submit-btn" form-type="submit" :loading="isSubmitting">
         {{ isLogin ? '登录' : '注册' }}
       </button>
@@ -47,8 +47,6 @@ const toggleMode = (login) => {
 
 // 表单提交处理
 const handleSubmit = async () => {
-  console.log('handleSubmit')
-  console.log(formData)
   if (isSubmitting.value) return
   isSubmitting.value = true
 
@@ -66,14 +64,12 @@ const handleSubmit = async () => {
 
     // 执行登录/注册操作
     const action = isLogin.value ? 'login' : 'register'
-    console.log(action)
     if (action === 'login') {
       const res = await login({ userName: formData.userName, userPassword: formData.userPassword })
-      console.log(res, 132465465)
-      userStore.setToken(res.data.access_token)
-      const user = await getUserInfo(res.data.userId)
-      userStore.setUserInfo(user.data)
       if (res.success) {
+        userStore.setToken(res.data.access_token)
+        const user = await getUserInfo(res.data.userId)
+        userStore.setUserInfo(user.data)
         Taro.showToast({
           title: `${isLogin.value ? '登录' : '注册'}成功`,
           icon: 'success'
@@ -82,6 +78,12 @@ const handleSubmit = async () => {
           Taro.switchTab({ url: '/pages/index/index' })
           isSubmitting.value = false
         }, 1000);
+      } else {
+        Taro.showToast({
+          title: res.message,
+          icon: 'error',
+          duration: 2000
+        })
       }
     } else {
       const res = await register({ userName: formData.userName, userPassword: formData.userPassword, userPasswordConfirm: formData.userPasswordConfirm })
@@ -91,6 +93,12 @@ const handleSubmit = async () => {
           icon: 'success'
         })
         isLogin.value = true
+      } else {
+        Taro.showToast({
+          title: res.message,
+          icon: 'error',
+          duration: 2000
+        })
       }
     }
   } catch (err) {

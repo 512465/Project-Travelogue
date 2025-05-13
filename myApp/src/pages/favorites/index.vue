@@ -1,7 +1,7 @@
 <template>
-  <view class="container" v-if="travelListItems.length">
-    <!-- 游记列表 -->
-    <view class="travel-list">
+  <view class="container">
+    <!-- 有数据则展示列表 -->
+    <view v-if="travelListItems.length" class="travel-list">
       <view v-for="item in travelListItems" :key="item.travelogueId" class="travel-item">
         <image v-if="item.type" class="cover" :src="item.travelogueCover" mode="aspectFill" />
         <video v-else class="cover" :src="item.travelogueCover" />
@@ -11,36 +11,46 @@
         </view>
       </view>
     </view>
-  </view>
-  <view v-else class="empty">
-    <view class="empty-content">
-      <image class="empty-icon" src="../../assets/2020031921552395638.jpg" mode="aspectFit" />
-      <view class="empty-text">
-        <view class="empty-title">还没有游记哦～</view>
-        <view class="empty-subtitle">去首页看看吧</view>
+
+    <!-- 加载中提示 -->
+    <view v-if="loading" class="loading">
+      <view class="spinner"></view>
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 无数据时的空态提示 -->
+    <view v-else-if="!travelListItems.length" class="empty">
+      <view class="empty-content">
+        <image class="empty-icon" src="../../assets/2020031921552395638.jpg" mode="aspectFit" />
+        <view class="empty-text">
+          <view class="empty-title">还没有游记哦～</view>
+          <view class="empty-subtitle">去首页看看吧</view>
+        </view>
       </view>
     </view>
   </view>
 </template>
 
+
 <script setup>
 import { ref, onMounted } from 'vue'
-import Taro from '@tarojs/taro'
+import Taro, { TarBarList } from '@tarojs/taro'
 import { useUserStore } from '../../stores/modules/user'
+const loading = ref(false)
 
 const travelListItems = ref([])
 const userStore = useUserStore()
 
 const getTravelogs = async () => {
+  loading.value = true
   try {
     const res = await Taro.request({
-      url: 'http://175.24.138.67:8586/api/travelogue/userCollects',
+      url: 'https://wl.wanghun.dpdns.org/api/travelogue/userCollects',
       method: 'GET',
       header: {
         Authorization: `Bearer ${userStore.token}`
       }
     })
-    console.log(res)
     travelListItems.value = res.data.data.map((item) => {
       return {
         ...item,
@@ -49,12 +59,14 @@ const getTravelogs = async () => {
     })
   } catch (error) {
     console.error(error)
+  } finally {
+    loading.value = false
   }
 }
 
 // 是否为图片
 const isImage = (url) => {
-  return /\.(jpg|jpeg|png|gif|bmp)$/.test(url)
+  return /\.(jpg|jpeg|png|gif|bmp|webp)$/.test(url)
 }
 
 onMounted(() => {
@@ -216,5 +228,13 @@ const truncateContent = (text) => {
       animation-delay: $i * 0.1s;
     }
   }
+}
+
+.loading {
+  padding: 40rpx 0;
+  color: #999;
+  text-align: center;
+  font-size: 28rpx;
+  animation: fadeIn 0.3s ease-in;
 }
 </style>

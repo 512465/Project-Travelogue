@@ -19,15 +19,16 @@
       <template v-else>
         <!-- 轮播图 -->
         <view class="swiper-wrapper">
-          <swiper class="test-h" indicatorColor="#999" indicatorActiveColor="#333" :current="current"
-                  :duration="duration" :interval="interval" circular="true" autoplay="true" indicatorDots="true"
-                  @change="onSwiperChange">
+          <swiper class="test-h" :style="{ height: swiperHeight + 'px' }" indicatorColor="#999"
+                  indicatorActiveColor="#333" :current="current" :duration="duration" :interval="interval"
+                  circular="true" autoplay="true" indicatorDots="true" @change="onSwiperChange">
             <swiper-item v-for="(item, idx) in imgs" :key="idx">
-              <view v-if="item.type === 'video'" @tap="playVideo(item)">
-                <video :src="item.url" id="myVideo" controls class="slide-image" />
+              <view v-if="item.type === 'video'" @tap="playVideo(item)"
+                    style="height: 100%; display: flex; align-items: center;">
+                <video :src="item.url" id="myVideo" controls class="slide-video" />
               </view>
-              <view v-else @tap="viewImage(item.url)">
-                <image :src="item.url" class="slide-image" />
+              <view v-else @tap="viewImage(item.url)" style="height: 100%; display: flex; align-items: center;">
+                <image :src="item.url" class="slide-image" mode="widthFix" @load="onImageLoad" />
               </view>
             </swiper-item>
           </swiper>
@@ -54,7 +55,7 @@
     </scroll-view>
 
     <!-- ✅ 固定底部操作栏 -->
-    <view class="footer-info-fixed">
+    <view class="footer-info-fixed" :style="{ pointerEvents: loading ? 'none' : 'auto', opacity: loading ? 0.5 : 1 }">
       <view class="interaction-bar">
         <view class="interaction-item">
           <Button openType="share" class="share-btn">
@@ -101,11 +102,14 @@ const current = ref(0)
 const duration = 500
 const interval = 5000
 const imgs = ref([])
-const severUrl = 'http://175.24.138.67:8586'
-const imgUrls = ref([])
+const severUrl = 'https://wl.wanghun.dpdns.org'
 const isLike = ref(false)
 const isCollects = ref(false)
 const id = ref(Taro.getCurrentInstance().router?.params?.id || '')
+const swiperHeight = ref(300) // 初始值，单位是 px
+
+// 用于记录当前最大高度
+let maxHeight = 0
 
 const formatDate = timestamp =>
   new Date(timestamp).toLocaleDateString()
@@ -165,23 +169,33 @@ const viewImage = (url) => {
 }
 
 const handleLike = () => {
-  isLike.value = !isLike.value
-  if (isLike.value) {
-    detail.value.travelogueLikes += 1
-  } else {
-    detail.value.travelogueLikes -= 1
-  }
-  isLikeSever(id.value)
+  isLikeSever(id.value).then(() => {
+    isLike.value = !isLike.value
+    if (isLike.value) {
+      detail.value.travelogueLikes += 1
+      Taro.showToast({ title: '点赞成功', icon: 'success' })
+    } else {
+      detail.value.travelogueLikes -= 1
+      Taro.showToast({ title: '取消点赞', icon: 'none' })
+    }
+  }).catch(() => {
+    Taro.showToast({ title: '请先登录', icon: 'none' })
+  })
 }
 
 const handleCollect = () => {
-  isCollects.value = !isCollects.value
-  if (isCollects.value) {
-    detail.value.travelogueCollects += 1
-  } else {
-    detail.value.travelogueCollects -= 1
-  }
-  isCollectSever(id.value)
+  isCollectSever(id.value).then((res) => {
+    isCollects.value = !isCollects.value
+    if (isCollects.value) {
+      detail.value.travelogueCollects += 1
+      Taro.showToast({ title: '收藏成功', icon: 'success' })
+    } else {
+      detail.value.travelogueCollects -= 1
+      Taro.showToast({ title: '取消收藏', icon: 'none' })
+    }
+  }).catch(() => {
+    Taro.showToast({ title: '请先登录', icon: 'none' })
+  })
 }
 
 useShareAppMessage(() => {
@@ -192,6 +206,18 @@ useShareAppMessage(() => {
   }
 })
 
+// 图片加载后获取实际高度
+const onImageLoad = (e) => {
+  const { width, height } = e.detail
+  const screenWidth = Taro.getSystemInfoSync().windowWidth
+  const scale = screenWidth / width
+  const realHeight = height * scale
+
+  if (realHeight > maxHeight) {
+    maxHeight = realHeight
+    swiperHeight.value = maxHeight
+  }
+}
 // 生命周期
 onMounted(async () => {
   if (!id.value) {

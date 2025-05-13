@@ -41,8 +41,6 @@ const authSlice = createSlice({
       // 如果 action.payload 中提供了 access_token，则将其存储到 localStorage
       if (action.payload.access_token) {
         localStorage.setItem('token', action.payload.access_token);
-        // console.log('Token 已保存到 localStorage:', action.payload.access_token);
-
         // 同时也将用户数据保存到 localStorage 以实现会话持久化
         // 创建一个仅包含必要用户详细信息的对象进行存储
         const userDataToStore = {
@@ -51,7 +49,6 @@ const authSlice = createSlice({
             adminAuth: action.payload.adminAuth,
         };
         localStorage.setItem('userData', JSON.stringify(userDataToStore));
-        // console.log('用户数据已保存到 localStorage。');
       } else {
         // 理想情况下，如果登录成功并提供了 token，则不应发生此情况
         console.warn('派发 login action 时，payload 中没有 access_token。');
@@ -64,7 +61,6 @@ const authSlice = createSlice({
       // 登出时从 localStorage 中移除 token 和用户数据
       localStorage.removeItem('token');
       localStorage.removeItem('userData'); // 确保也移除 userData
-      // console.log('Token 和用户数据已从 localStorage 中移除。');
     },
     // 显式设置用户数据的 action (例如，在应用加载时从 API 获取数据后)
     setUser: (state, action) => {

@@ -109,7 +109,7 @@ const uploadFile = async (file) => {
 
   try {
     const res = await Taro.uploadFile({
-      url: 'http://175.24.138.67:8586/api/upload',
+      url: 'https://wl.wanghun.dpdns.org/api/upload',
       filePath: file.tempFilePath,
       name: 'file',
       header: {
@@ -121,7 +121,7 @@ const uploadFile = async (file) => {
     if (result.data?.url) {
       const newFile = {
         type: file.fileType,
-        url: 'http://175.24.138.67:8586' + result.data.url,
+        url: 'https://wl.wanghun.dpdns.org' + result.data.url,
         thumb: file.fileType === 'image' ? file.tempFilePath : null
       }
       if (file.fileType === 'video') {
@@ -218,7 +218,8 @@ const onPublish = async () => {
     travelogueTitle: title.value,
     travelogueContent: content.value,
     travelogueCover: files.value[0].url,
-    travelogueImages: files.value
+    travelogueImages: files.value,
+    travelogueStatus: 0
   }).then((res) => {
     Taro.hideLoading()
     Taro.showToast({ title: '发布成功', icon: 'success' })
@@ -235,7 +236,6 @@ const onPublish = async () => {
 }
 
 onMounted(async () => {
-  console.log('onMounted', id.value)
   const res = await getTravelogueIdDetail(id.value)
   if (res.code === 200) {
     title.value = res.data.travelogueTitle
