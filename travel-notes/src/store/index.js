@@ -41,6 +41,7 @@ const authSlice = createSlice({
       // 如果 action.payload 中提供了 access_token，则将其存储到 localStorage
       if (action.payload.access_token) {
         localStorage.setItem('token', action.payload.access_token);
+
         // 同时也将用户数据保存到 localStorage 以实现会话持久化
         // 创建一个仅包含必要用户详细信息的对象进行存储
         const userDataToStore = {
