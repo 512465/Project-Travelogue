@@ -88,6 +88,22 @@ const handleAddFile = async () => {
 
     const tempFiles = res.tempFiles
 
+    // 检查已有视频
+    const existingVideoCount = files.value.filter(f => f.type === 'video').length
+
+    // 这次选择的视频数量
+    const selectedVideoCount = tempFiles.filter(f => f.fileType === 'video').length
+
+    // 限制只允许上传 1 个视频
+    if (existingVideoCount + selectedVideoCount > 1) {
+      Taro.showToast({
+        title: '最多只能上传一个视频',
+        icon: 'none',
+        duration: 2000
+      })
+      return
+    }
+
     for (const file of tempFiles) {
       await uploadFile(file)
     }
