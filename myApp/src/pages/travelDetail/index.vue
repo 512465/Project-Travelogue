@@ -185,7 +185,6 @@ const handleLike = () => {
 
 const handleCollect = () => {
   isCollectSever(id.value).then((res) => {
-    console.log(res)
     isCollects.value = !isCollects.value
     if (isCollects.value) {
       detail.value.travelogueCollects += 1

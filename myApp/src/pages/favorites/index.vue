@@ -51,7 +51,6 @@ const getTravelogs = async () => {
         Authorization: `Bearer ${userStore.token}`
       }
     })
-    console.log(res)
     travelListItems.value = res.data.data.map((item) => {
       return {
         ...item,

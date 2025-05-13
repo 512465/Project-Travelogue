@@ -84,7 +84,6 @@ const getTravelogs = async (isRefresh = false) => {
   }
 
   const res = await getTravelDetail({ page, limit: 5 })
-  console.log(res)
   const items = res.data.items.map((item) => {
     return {
       ...item,

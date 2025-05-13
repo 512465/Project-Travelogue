@@ -169,8 +169,6 @@ const loadTravelCards = async (isRefresh = false) => {
     }
   }) || []
 
-  console.log('items', items)
-
   skeletonLoading.value = false
   if (isRefresh) {
     travelCards.value = items

@@ -48,16 +48,12 @@ import { useUserStore } from '../../stores/index.js'
 
 const userStore = useUserStore()
 const token = userStore.token
-console.log(userStore.token)
-console.log(userStore.userInfo)
 const avatar = ref('')
 if (userStore.userInfo.userAvatar) {
   avatar.value = 'https://wl.wanghun.dpdns.org' + userStore.userInfo.userAvatar
 }
-console.log(avatar.value)
 
 const handleClick = () => {
-  console.log('handleClick')
   Taro.reLaunch({
     url: '/pages/login/index'
   })
@@ -65,7 +61,6 @@ const handleClick = () => {
 
 // 处理我的游记
 const handleMyTravelNotes = () => {
-  console.log('我的游记')
   Taro.navigateTo({
     url: '/pages/travel-notes/index'
   })
@@ -73,7 +68,6 @@ const handleMyTravelNotes = () => {
 
 // 处理我的收藏
 const handleMyFavorites = () => {
-  console.log('我的收藏')
   Taro.navigateTo({
     url: '/pages/favorites/index'
   })
@@ -81,31 +75,26 @@ const handleMyFavorites = () => {
 
 // 处理退出登录
 const handleLogout = () => {
-  console.log('退出登录')
   Taro.showModal({
     title: '提示',
     content: '确定要退出登录吗？',
     success: (res) => {
       if (res.confirm) {
         userStore.removeToken()
-        console.log(userStore.token)
         Taro.reLaunch({ url: '/pages/index/index' })
       }
-      console.log(res)
     }
   })
 }
 
 // 处理头像更新
 const handleUpdateAvatar = () => {
-  console.log('更新头像')
   Taro.chooseMedia({
     count: 1,
     mediaType: ['image'],
     sourceType: ['album', 'camera'],
     success: (res) => {
       uploadFile(res.tempFiles[0])
-      console.log(res)
     }
   })
 }
@@ -123,10 +112,8 @@ const uploadFile = async (file) => {
         Authorization: `Bearer ${token}`
       }
     })
-    console.log(res)
     const result = JSON.parse(res.data)
     if (result.data?.url) {
-      console.log(result.data.url, 1324978454132)
       const res = await Taro.request({
         url: 'https://wl.wanghun.dpdns.org/api/user/avatar',
         method: 'PATCH',
@@ -137,7 +124,6 @@ const uploadFile = async (file) => {
           Authorization: `Bearer ${token}`
         }
       })
-      console.log(res, 1324978454132)
       const data = res.data.data.newData
       data.userAvatar = res.data.data.newAvatar
       userStore.setUserInfo(data)

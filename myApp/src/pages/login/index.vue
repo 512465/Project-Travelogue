@@ -47,8 +47,6 @@ const toggleMode = (login) => {
 
 // 表单提交处理
 const handleSubmit = async () => {
-  console.log('handleSubmit')
-  console.log(formData)
   if (isSubmitting.value) return
   isSubmitting.value = true
 
@@ -66,10 +64,8 @@ const handleSubmit = async () => {
 
     // 执行登录/注册操作
     const action = isLogin.value ? 'login' : 'register'
-    console.log(action)
     if (action === 'login') {
       const res = await login({ userName: formData.userName, userPassword: formData.userPassword })
-      console.log(res, 132465465)
       userStore.setToken(res.data.access_token)
       const user = await getUserInfo(res.data.userId)
       userStore.setUserInfo(user.data)
