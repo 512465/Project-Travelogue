@@ -64,7 +64,7 @@ const authSlice = createSlice({
       // 登出时从 localStorage 中移除 token 和用户数据
       localStorage.removeItem('token');
       localStorage.removeItem('userData'); // 确保也移除 userData
-      console.log('Token 和用户数据已从 localStorage 中移除。');
+      // console.log('Token 和用户数据已从 localStorage 中移除。');
     },
     // 显式设置用户数据的 action (例如，在应用加载时从 API 获取数据后)
     setUser: (state, action) => {

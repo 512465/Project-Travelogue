@@ -31,7 +31,7 @@ api.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       // 检查当前路径，如果不是在登录页面才重定向
       if (!window.location.pathname.includes('/login')) {
-        console.log('401错误，重定向到登录页');
+        // console.log('401错误，重定向到登录页');
         localStorage.removeItem('token');
         window.location.href = '/login';
       }
