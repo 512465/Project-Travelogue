@@ -52,7 +52,7 @@ const MediaGallery = ({
               src={url}
               alt={`图片${index + 1}`}
               style={{ width, height, objectFit: 'cover' }}
-              imgProps={{ loading: 'lazy' }}
+              loading="lazy"
             />
             {showTitle && (
               <div style={{ marginTop: 8, textAlign: 'center' }}>

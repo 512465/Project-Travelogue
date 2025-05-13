@@ -5,7 +5,6 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import StatusTag from '../../components/StatusTag';
 import ReviewActions from '../../components/ReviewActions';
 import DeleteButton from '../../components/DeleteButton';
-import ImageGallery from '../../components/ImageGallery';
 import MediaGallery from '../../components/ImageGallery';
 import { travelogueApi } from '../../services/api';
 
@@ -130,16 +129,16 @@ const ReviewDetail = () => {
 
       <Card title="基本信息" style={{ marginBottom: 16, width: '100%' }}>
         <Descriptions bordered column={2} style={{ width: '100%' }}>
-          <Descriptions.Item label="游记ID">{review.id}</Descriptions.Item>
-          <Descriptions.Item label="审核状态"><StatusTag status={review.status} /></Descriptions.Item>
+          <Descriptions.Item label="游记ID" span={1}>{review.id}</Descriptions.Item>
+          <Descriptions.Item label="审核状态" span={1}><StatusTag status={review.status} /></Descriptions.Item>
           <Descriptions.Item label="标题" span={2}>{review.title}</Descriptions.Item>
-          <Descriptions.Item label="作者">{review.submitter}</Descriptions.Item>
-          <Descriptions.Item label="用户ID">{review.submitterInfo.id}</Descriptions.Item>
-          <Descriptions.Item label="浏览量">{review.originalData.travelogueViews}</Descriptions.Item>
-          <Descriptions.Item label="点赞">{review.originalData.travelogueLikes}</Descriptions.Item>
-          <Descriptions.Item label="收藏">{review.originalData.travelogueCollects}</Descriptions.Item>
-          <Descriptions.Item label="提交时间">{review.submitTime}</Descriptions.Item>
-          <Descriptions.Item label="更新时间">{review.updateTime}</Descriptions.Item>
+          <Descriptions.Item label="作者" span={1}>{review.submitter}</Descriptions.Item>
+          <Descriptions.Item label="用户ID" span={1}>{review.submitterInfo.id}</Descriptions.Item>
+          <Descriptions.Item label="浏览量" span={1}>{review.originalData.travelogueViews}</Descriptions.Item>
+          <Descriptions.Item label="点赞" span={1}>{review.originalData.travelogueLikes}</Descriptions.Item>
+          <Descriptions.Item label="收藏" span={1}>{review.originalData.travelogueCollects}</Descriptions.Item>
+          <Descriptions.Item label="提交时间" span={1}>{review.submitTime}</Descriptions.Item>
+          <Descriptions.Item label="更新时间" span={1}>{review.updateTime}</Descriptions.Item>
           {review.status === -1 && review.originalData.travelogueRejectReason && (
             <Descriptions.Item label="拒绝理由" span={2}>
               <span style={{ color: 'red' }}>{review.originalData.travelogueRejectReason}</span>
