@@ -122,7 +122,6 @@ const uploadFile = async (file) => {
         url: 'https://wl.wanghun.dpdns.org' + result.data.url,
         thumb: file.fileType === 'image' ? file.tempFilePath : null
       }
-      console.log('上传成功:', newFile)
       if (file.fileType === 'video') {
         const hasVideo = files.value.length > 0 && files.value[0].type === 'video'
         if (hasVideo) {

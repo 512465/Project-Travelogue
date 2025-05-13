@@ -236,7 +236,6 @@ const onPublish = async () => {
 }
 
 onMounted(async () => {
-  console.log('onMounted', id.value)
   const res = await getTravelogueIdDetail(id.value)
   if (res.code === 200) {
     title.value = res.data.travelogueTitle
